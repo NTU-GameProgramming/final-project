@@ -5,17 +5,25 @@
 #include "CharacterManageSystem.h"
 #include "Camera.h"
 
+#define window_w 1024
+#define window_h 768
+#define sight_w 83
+#define sight_h 66
+
 VIEWPORTid viewportID;	//major viewe port
 SCENEid sceneID;	//3d scene
 OBJECTid cameraID, cameraBaseID, terrainID, lightID;
 CHARACTERid actorID;
 ACTIONid idleID, runID, curPoseID;
+OBJECTid spID0 = FAILED_ID;
 
 ROOMid terrainRoomID = FAILED_ID;
 TEXTid textID = FAILED_ID;
 TEXTid textCharID = FAILED_ID;
+TEXTid textHP_vID = FAILED_ID;
+TEXTid textInfo_vID = FAILED_ID;
 Camera camera;
-
+SCENEid sID2;                // the 2D scene
 CharacterManageSystem chrMgtSystem;
 
 
@@ -57,7 +65,7 @@ void FyMain(int argc, char **argv)
 	std::cout<<"Start Game";
 	std::cout.flush();
 	//create a new window
-	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, 1024, 768, FALSE);
+	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, window_w, window_h, FALSE);
 	
 	//set up path
 	FySetShaderPath("Data\\NTU5\\Shaders");
@@ -75,6 +83,19 @@ void FyMain(int argc, char **argv)
 
 	scene.Load("gameScene01");
 	scene.SetAmbientLights(1.0f, 1.0f, 1.0f, 0.6f, 0.6f, 0.6f);
+
+	 // create a 2D scene for sprite rendering which will be rendered on the top of 3D
+    FnScene scene2D;
+    sID2 = FyCreateScene(1);
+    scene2D.Object(sID2);
+    scene2D.SetSpriteWorldSize(1024, 768);         // 2D scene size in pixels
+
+	FnSprite sp;
+    spID0 = scene2D.CreateObject(SPRITE);
+    sp.Object(spID0);
+	sp.SetSize(sight_w, sight_h);
+    sp.SetImage("spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+	sp.SetPosition(window_w/2-sight_w/2, window_h/2-sight_h/2, 0);
 
 	//load the terrain
 	terrainID = scene.CreateObject(OBJECT);
@@ -126,7 +147,9 @@ void FyMain(int argc, char **argv)
    */
    //create a text object for display message on screen
    textID = FyCreateText("Trebuchet MS", 18, FALSE, FALSE);
-   textCharID = FyCreateText("Trebuchet MS", 40, TRUE, FALSE);
+   textCharID = FyCreateText("Trebuchet MS", 20, TRUE, FALSE);
+   textHP_vID = FyCreateText("Trebuchet MS", 60, TRUE, FALSE);
+   textInfo_vID = FyCreateText("Trebuchet MS", 30, TRUE, FALSE);
 
    // set Hotkeys
    /*
@@ -168,13 +191,12 @@ void GameAI(int skip)
 void RenderIt(int skip){
 	float pos[3], fDir[3], uDir[3];
 
-
 	FnViewport vp;
 
 	//render the whole scene
 	vp.ID(viewportID);
 	vp.Render3D(cameraID, TRUE, TRUE);
-
+	vp.RenderSprites(sID2, FALSE, TRUE);  // no clear the background but clear the z buffer
 
 	//show frame rate
 	static char string[128];
@@ -193,9 +215,11 @@ void RenderIt(int skip){
 		frame = 0;
 	}
 
-	FnText text,charactorInfo;
+	FnText text,charactorInfo,char_HP,info;
 	text.ID(textID);
 	charactorInfo.ID(textCharID);
+	char_HP.ID(textHP_vID);
+	info.ID(textInfo_vID);
 
 	text.Begin(viewportID);
 	charactorInfo.Begin(viewportID);
@@ -240,9 +264,21 @@ void RenderIt(int skip){
 
    text.End();
 
-   	sprintf_s(posS, "HP:%d", chrMgtSystem.getCharacterblood(actorID));
-	charactorInfo.Write(posS, 100, 700, 255, 255, 100);
+   	sprintf_s(posS, "HEALTH", chrMgtSystem.getCharacterblood(actorID));
+	charactorInfo.Write(posS, 50, 700, 255, 255, 100);
+	sprintf_s(posS, "ROUND", chrMgtSystem.getCharacterblood(actorID));
+	charactorInfo.Write(posS, 400, 700, 255, 255, 100);
+	sprintf_s(posS, "TIME", chrMgtSystem.getCharacterblood(actorID));
+	charactorInfo.Write(posS, 515, 700, 255, 255, 100);
 	charactorInfo.End();
+
+	sprintf_s(posS, "%d", chrMgtSystem.getCharacterblood(actorID));
+	char_HP.Write(posS, 110, 672, 255, 255, 255);
+	sprintf_s(posS, "%d", chrMgtSystem.getCharacterblood(actorID));
+	info.Write(posS, 460, 694 ,255, 255, 255);
+	sprintf_s(posS, "%d", chrMgtSystem.getCharacterblood(actorID));
+	info.Write(posS, 560, 694, 255, 255, 255);
+	info.End();
    FySwapBuffers();
 }
 
