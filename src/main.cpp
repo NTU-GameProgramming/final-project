@@ -58,6 +58,7 @@ void InitZoom(int, int);
 void ZoomCam(int, int);
 void ChangeActor(BYTE code, BOOL4 value);
 void setCamera();
+void showMenu(BYTE code, BOOL4 value);
 
 void FyMain(int argc, char **argv)
 {
@@ -160,6 +161,7 @@ void FyMain(int argc, char **argv)
    FyDefineHotKey(FY_DOWN, Movement, FALSE);    // Down for moving backward
 	*/
    FyDefineHotKey(FY_TAB, ChangeActor, FALSE);
+   FyDefineHotKey(FY_ESC, showMenu, FALSE);
    //define some mouse function
    FyBindMouseFunction(LEFT_MOUSE, InitPivot, PivotCam, NULL, NULL);
    FyBindMouseFunction(MIDDLE_MOUSE, InitZoom, ZoomCam, NULL, NULL);
@@ -396,6 +398,14 @@ void ZoomCam(int x, int y)
       oldXMM = x;
       oldYMM = y;
    }
+}
+
+void showMenu(BYTE code, BOOL4 value)
+{
+	if (value)
+	{
+		
+	}
 }
 
 void ChangeActor(BYTE code, BOOL4 value)
