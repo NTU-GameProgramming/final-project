@@ -9,6 +9,8 @@
 #define window_h 768
 #define sight_w 83
 #define sight_h 66
+#define mouse_w 20
+#define mouse_h 30
 
 VIEWPORTid viewportID;	//major viewe port
 SCENEid sceneID;	//3d scene
@@ -16,6 +18,8 @@ OBJECTid cameraID, cameraBaseID, terrainID, lightID;
 CHARACTERid actorID;
 ACTIONid idleID, runID, curPoseID;
 OBJECTid spID0 = FAILED_ID;
+OBJECTid spID1 = FAILED_ID;
+
 
 ROOMid terrainRoomID = FAILED_ID;
 TEXTid textID = FAILED_ID;
@@ -24,6 +28,8 @@ TEXTid textHP_vID = FAILED_ID;
 TEXTid textInfo_vID = FAILED_ID;
 Camera camera;
 SCENEid sID2;                // the 2D scene
+SCENEid sID2menu;                // the 2D scene
+
 CharacterManageSystem chrMgtSystem;
 
 
@@ -34,6 +40,7 @@ char dbg_msgS[256];
 
 //global value
 
+int stateMenu = 0;
 
 int frame = 0;
 
@@ -97,6 +104,25 @@ void FyMain(int argc, char **argv)
 	sp.SetSize(sight_w, sight_h);
     sp.SetImage("spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
 	sp.SetPosition(window_w/2-sight_w/2, window_h/2-sight_h/2, 0);
+
+	FnScene scene2Dmenu;
+	sID2menu = FyCreateScene(1);
+    scene2Dmenu.Object(sID2menu);
+    scene2Dmenu.SetSpriteWorldSize(1024, 768);         // 2D scene size in pixels
+
+	FnSprite spExit;
+    OBJECTid spIDexit = scene2Dmenu.CreateObject(SPRITE);
+    spExit.Object(spIDexit);
+	spExit.SetSize(135, 23);
+    spExit.SetImage("exit_button", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+	spExit.SetPosition(window_w/2-135/2, window_h/2-23/2, 0);
+
+	FnSprite sp1;
+    spID1 = scene2Dmenu.CreateObject(SPRITE);
+    sp1.Object(spID1);
+	sp1.SetSize(mouse_w, mouse_h);
+    sp1.SetImage("mouse", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+	sp1.SetPosition(window_w/2-mouse_w/2, window_h/2-mouse_h/2, 0);
 
 	//load the terrain
 	terrainID = scene.CreateObject(OBJECT);
@@ -183,11 +209,14 @@ void FyMain(int argc, char **argv)
  --------------------------------------------------------------*/
 void GameAI(int skip)
 {
-	chrMgtSystem.update(skip); //人物狀態的更新
-	actorID = chrMgtSystem.getActorID();
-   //Camera狀態的更新
-	camera.GameAIupdate(skip);
-	//camera.resetCamera();
+	if (!stateMenu)
+	{
+		chrMgtSystem.update(skip); //人物狀態的更新
+		actorID = chrMgtSystem.getActorID();
+	   //Camera狀態的更新
+		camera.GameAIupdate(skip);
+		//camera.resetCamera();
+	}
 }
 
 void RenderIt(int skip){
@@ -198,8 +227,11 @@ void RenderIt(int skip){
 	//render the whole scene
 	vp.ID(viewportID);
 	vp.Render3D(cameraID, TRUE, TRUE);
-	vp.RenderSprites(sID2, FALSE, TRUE);  // no clear the background but clear the z buffer
-
+	if(stateMenu)
+		vp.RenderSprites(sID2menu, FALSE, TRUE);  // no clear the background but clear the z buffer
+	else
+		vp.RenderSprites(sID2, FALSE, TRUE);  // no clear the background but clear the z buffer
+	
 	//show frame rate
 	static char string[128];
 	if(frame == 0){
@@ -404,7 +436,8 @@ void showMenu(BYTE code, BOOL4 value)
 {
 	if (value)
 	{
-		
+		stateMenu = stateMenu ? 0 : 1;
+
 	}
 }
 
