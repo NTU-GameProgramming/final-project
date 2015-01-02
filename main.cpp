@@ -76,9 +76,10 @@ void FyMain(int argc, char **argv) {
 	if(ip.empty()) {ip = "127.0.0.1";}
 	if(port.empty()) {port = "8976";}
 
+	cout << "Connect to server..." << endl;
 	game_client.initialize(ip, port, &game_updater);
 	game_client.connectServer();
-	
+	cout << "Server connected." << endl;
 
 	std::cout<<"Start Game" << std::endl;
 	//create a new window
