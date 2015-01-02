@@ -1,66 +1,88 @@
 #include "CharacterManageSystem.h"
 
 
-CharacterManageSystem::CharacterManageSystem(void)
-	:m_localPlayerId(NULL)
-{
+CharacterManageSystem::CharacterManageSystem(GmUpdaterReal *game_updater) :m_localPlayerId(NULL) {
+	this->game_updater = game_updater;
+	game_updater->initialize(&(this->m_mapCharacterId2NewState));
 }
 
 
-CharacterManageSystem::~CharacterManageSystem(void)
-{
+CharacterManageSystem::~CharacterManageSystem(void) {
 }
 
 bool CharacterManageSystem::addCharacter(Character &character, bool isLocalPlayer){
 	CHARACTERid  characterId = character.getCharacterId();
 	Character *pCharacter = &character;
-	if(characterId == NULL){
+	if(characterId == NULL) {
+		std::cout << "characerId is NULL!!" << std::endl;
 		return true;
 	}
 	m_mapCharacterId2Character.insert(std::pair<CHARACTERid, Character*>(characterId, pCharacter));
 	m_mapCharacterId2NewState.insert(std::pair<CHARACTERid, MotionState>(characterId, MotionState::IDLE));	
 	m_mapStrName2CharacterId.insert(std::pair<std::string, CHARACTERid>(character.getCharacterName(), characterId));
-	if(isLocalPlayer){	
+	std::cout << "characterID:" << characterId << std::endl;
+	if(isLocalPlayer) {
 		m_localPlayerId = characterId;
+		std::cout << "localPlayerID:" << characterId << std::endl;
 		m_FightSystem.initialize(this,&m_mapCharacterId2Character);
 	}
 	return false;
 }
 
 void CharacterManageSystem::updateCharacterInputs(){
+
+	MotionState old_state = m_mapCharacterId2NewState[m_localPlayerId]; // old state
+	bool move = false, attack = false;
+
 	//for local player
    	int newState = 0;
 	if(FyCheckHotKeyStatus(FY_UP)){
 		newState = newState|MOVE_FORWARD;
-		std::cout<<"up key\n";
+		move = true;
+		//std::cout<<"up key\n";
 	}												  
 	if(FyCheckHotKeyStatus(FY_DOWN)){
 		newState = newState|MOVE_BACKWARD;
-		std::cout<<"down key\n";
+		move = true;
+		//std::cout<<"down key\n";
 	}
 	if(FyCheckHotKeyStatus(FY_LEFT)){
 		newState = newState|MOVE_LEFT;
-		std::cout<<"left key\n";
+		move = true;
+		//std::cout<<"left key\n";
 	}
 	if(FyCheckHotKeyStatus(FY_RIGHT)){
 		newState = newState|MOVE_RIGHT;
-		std::cout<<"right key\n";
+		move = true;
+		//std::cout<<"right key\n";
 	}
 	if(FyCheckHotKeyStatus(FY_F)){
-		newState = ATTACK;			//player can not move while attacking
-		std::cout<<"attak key\n";
+		newState = ATTACK;			//player can not move while attacking, so use "=" instead of "|"
+		//std::cout<<"attak key\n";
 	}
 
-	m_mapCharacterId2NewState[m_localPlayerId] = (MotionState)newState;
+	m_mapCharacterId2NewState[m_localPlayerId] = static_cast<MotionState>(newState);
+
+	// If state is changed, send message over net to inform others.
+	if(old_state != static_cast<MotionState>(newState)) {
+		this->game_updater->updateCharacterMotionStatePush(m_localPlayerId, static_cast<MotionState>(newState));
+	}
+
+	if(move) {
+		this->game_updater->updateCharacterPushPosition(m_localPlayerId);
+	}
 
 	//update other charcter's input state
 	//m_mapCharacterId2NewState[m_mapStrName2CharacterId["Donzo2"]] = MotionState::IDLE;
 }
 
 void CharacterManageSystem::update(int skip){
+
+	// Need to modified to update EVERY character
+
 	updateCharacterInputs();
 
-	//update date character's animation and motion
+	//update character's animation and motion
 	{
 		std::map<CHARACTERid, Character*>::iterator chrIter = m_mapCharacterId2Character.begin();
 		for(; chrIter != m_mapCharacterId2Character.end(); ++chrIter){
@@ -76,6 +98,7 @@ void CharacterManageSystem::update(int skip){
 			if(chrIter->second == MotionState::ATTACK){
 				//trigger fight system
 				m_FightSystem.judgeAttack(chrIter->first);
+				this->game_updater->updateCharacterAttackPush(this->m_localPlayerId);
 			}
 		}
 	}

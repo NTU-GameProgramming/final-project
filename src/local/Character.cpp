@@ -1,5 +1,5 @@
 #include "Character.h"
-
+#include <iostream>
 Character::Character(void)
 	:m_sceneId(NULL),
 	 m_terrianId(NULL),
