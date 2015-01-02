@@ -43,7 +43,7 @@ void FyMain(int argc, char **argv) {
 	while(true) {
 		actors[main_actor_id]->pos[1] += 5.0f;
 		Sleep(500);
-		game_updater.updateCharacterPush(main_actor_id);
+		game_updater.updateCharacterPushPosition(main_actor_id);
 		game_client.update();
 
 	}
