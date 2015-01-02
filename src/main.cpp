@@ -167,8 +167,6 @@ void GameAI(int skip)
 
 void RenderIt(int skip){
 	float pos[3], fDir[3], uDir[3];
-
-
 	FnViewport vp;
 
 	//render the whole scene
