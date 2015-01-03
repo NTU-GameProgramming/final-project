@@ -4,6 +4,7 @@
 #include <math.h>
 #include "Character.h"
 
+/*
 class Camera {
 	public:
 		Camera(void);
@@ -47,3 +48,67 @@ class Camera {
 		float char_old_fDir[3];		 // it is needed to record the old face direction of character
 };
 
+*/
+
+extern int wndWidth, wndHeight;
+
+class Camera{
+public:
+	Camera();
+
+	~Camera(){
+
+	}
+
+	void initialize(OBJECTid cameraId, OBJECTid terrianId, Character* parent);
+
+	void update(int skip);
+
+	void resetCamera();
+
+	void getCameraPos(float *pos){
+		pos[0] = m_pos[0];
+		pos[1] = m_pos[1];
+		pos[2] = m_pos[2];
+	}
+
+	void getCameraDir(float *uDir, float *fDir){
+		uDir[0] = m_uDir[0];
+		uDir[1] = m_uDir[1];
+		uDir[2] = m_uDir[2];
+
+		fDir[0] = m_fDir[0];
+		fDir[1] = m_fDir[1];
+		fDir[2] = m_fDir[2];
+	}
+
+	OBJECTid getCameraId(){
+		return m_nCameraId;
+	}
+
+	float getCameraAngle(){
+		return m_fVerAngle;
+	}
+
+private:
+
+
+private:
+	OBJECTid m_nParentId;
+	OBJECTid m_nCameraId;
+
+	Character *m_pParent;
+	
+	FnCharacter m_fnParent;
+	FnCamera m_fnCamera;
+
+	float m_fVerAngle;
+	float m_fMouseSensy;
+	float m_fMaxVerAngle;
+	float m_fMinVerAngle;
+	float m_fMaxVerAngleVel;
+
+
+	float m_pos[3];
+	float m_uDir[3], m_fDir[3];
+};

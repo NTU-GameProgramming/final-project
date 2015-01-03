@@ -14,7 +14,7 @@ CharacterManageSystem::~CharacterManageSystem(void)
 bool CharacterManageSystem::addCharacter(Character &character, bool isLocalPlayer){
 	CHARACTERid  characterId = character.getCharacterId();
 	Character *pCharacter = &character;
-	if(characterId == NULL){
+	if (characterId == NULL){
 		return true;
 	}
 	m_mapCharacterId2Character.insert(std::pair<CHARACTERid, Character*>(characterId, pCharacter));
@@ -23,6 +23,7 @@ bool CharacterManageSystem::addCharacter(Character &character, bool isLocalPlaye
 	if(isLocalPlayer){	
 		m_localPlayerId = characterId;
 		m_FightSystem.initialize(this,&m_mapCharacterId2Character);
+		character.displayMesh(false);
 	}
 	return false;
 }
@@ -30,28 +31,45 @@ bool CharacterManageSystem::addCharacter(Character &character, bool isLocalPlaye
 void CharacterManageSystem::updateCharacterInputs(){
 	//for local player
    	int newState = 0;
-	if(FyCheckHotKeyStatus(FY_UP)){
-		newState = newState|MOVE_FORWARD;
+	if(FyCheckHotKeyStatus(FY_W)){
+		newState = newState | MotionState::MOVE_FORWARD;
 		std::cout<<"up key\n";
 	}												  
-	if(FyCheckHotKeyStatus(FY_DOWN)){
-		newState = newState|MOVE_BACKWARD;
+	if(FyCheckHotKeyStatus(FY_S)){
+		newState = newState | MotionState::MOVE_BACKWARD;
 		std::cout<<"down key\n";
 	}
-	if(FyCheckHotKeyStatus(FY_LEFT)){
-		newState = newState|MOVE_LEFT;
+	if(FyCheckHotKeyStatus(FY_A)){
+		newState = newState | MotionState::MOVE_LEFT;
 		std::cout<<"left key\n";
 	}
-	if(FyCheckHotKeyStatus(FY_RIGHT)){
-		newState = newState|MOVE_RIGHT;
+	if(FyCheckHotKeyStatus(FY_D)){
+		newState = newState | MotionState::MOVE_RIGHT;
 		std::cout<<"right key\n";
 	}
-	if(FyCheckHotKeyStatus(FY_F)){
-		newState = ATTACK;			//player can not move while attacking
-		std::cout<<"attak key\n";
+
+	if (FyCheckHotKeyStatus(FY_Q)){
+		newState = newState | MotionState::TURN_LEFT;
+		std::cout << "left key\n";
+	}
+	if (FyCheckHotKeyStatus(FY_E)){
+		newState = newState | MotionState::TURN_RIGHT;
+		std::cout << "right key\n";
 	}
 
-	m_mapCharacterId2NewState[m_localPlayerId] = (MotionState)newState;
+	if (FyCheckHotKeyStatus(FY_F)){
+		newState = newState | MotionState::ATTACK;
+		std::cout<<"attak key\n";
+	}
+	if (mouseInput.mouseVelX > 0){
+		newState = newState | MotionState::TURN_RIGHT;
+	}
+
+	if(mouseInput.mouseVelX < 0){
+		newState = newState | MotionState::TURN_LEFT;
+	}
+
+	m_mapCharacterId2NewState[m_localPlayerId] = newState;
 
 	//update other charcter's input state
 	//m_mapCharacterId2NewState[m_mapStrName2CharacterId["Donzo2"]] = MotionState::IDLE;
@@ -71,9 +89,9 @@ void CharacterManageSystem::update(int skip){
 	//check attack
 	{
 //		(m_mapCharacterId2Character[m_mapStrName2CharacterId["Donzo2"] ])->modifyChrBlood(-1);	   //used to test die
-		std::map<CHARACTERid, MotionState>::iterator chrIter = m_mapCharacterId2NewState.begin();
+		std::map<CHARACTERid, int>::iterator chrIter = m_mapCharacterId2NewState.begin();
 		for(;chrIter != m_mapCharacterId2NewState.end(); ++chrIter){
-			if(chrIter->second == MotionState::ATTACK){
+			if(chrIter->second == (int)MotionState::ATTACK){
 				//trigger fight system
 				m_FightSystem.judgeAttack(chrIter->first);
 			}
@@ -113,26 +131,29 @@ void CharacterManageSystem::gotAttacked(CHARACTERid characterId,float damage)
 	int blood = character->modifyChrBlood(-1 * damage);
 	if (blood)
 	{
-		m_mapCharacterId2NewState[characterId] = DAMAGED;
+		m_mapCharacterId2NewState[characterId] = MotionState::DAMAGED;
 	}
 
 }
 
 void CharacterManageSystem::changActorByTAB()
 {
+	m_mapCharacterId2Character[m_localPlayerId]->displayMesh(true);
 	std::map<CHARACTERid, Character*>::iterator chrIter = m_mapCharacterId2Character.begin();
-		for(; chrIter != m_mapCharacterId2Character.end(); ++chrIter){
-			if (chrIter->first == m_localPlayerId && std::next(chrIter, 1) == m_mapCharacterId2Character.end())
-			{
-				chrIter->second->notOnCameraFocus();
-				m_localPlayerId =  m_mapCharacterId2Character.begin()->first;
-				return;
-			}
-			else if (chrIter->first == m_localPlayerId)
-			{
-				chrIter->second->notOnCameraFocus();
-				m_localPlayerId = std::next(chrIter,1)->first;
-				return;
-			}
+	for(; chrIter != m_mapCharacterId2Character.end(); ++chrIter){
+		if (chrIter->first == m_localPlayerId && std::next(chrIter, 1) == m_mapCharacterId2Character.end())
+		{
+			chrIter->second->notOnCameraFocus();
+			m_localPlayerId =  m_mapCharacterId2Character.begin()->first;
+			break;
 		}
+		else if (chrIter->first == m_localPlayerId)
+		{
+			chrIter->second->notOnCameraFocus();
+			m_localPlayerId = std::next(chrIter,1)->first;
+			break;
+		}
+	}
+	m_mapCharacterId2Character[m_localPlayerId]->displayMesh(false);
+	return;
 }

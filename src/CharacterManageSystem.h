@@ -1,8 +1,15 @@
 #pragma once
 
 #include "Character.h"
+#include "basic.h"
 #include <string>
 #include "FightSystem.h"
+#include "Mouse.h"
+
+extern Mouse mouseInput;
+
+extern int wndWidth, wndHeight;
+
 class CharacterManageSystem
 {
 public:
@@ -30,7 +37,7 @@ private:
 
 private:
 	std::map<CHARACTERid, Character*> m_mapCharacterId2Character;
-	std::map<CHARACTERid, MotionState> m_mapCharacterId2NewState;
+	std::map<CHARACTERid, int> m_mapCharacterId2NewState;
 	std::map<std::string, CHARACTERid> m_mapStrName2CharacterId; 
 	FightSystem m_FightSystem;
 	CHARACTERid m_localPlayerId;
