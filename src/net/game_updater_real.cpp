@@ -7,8 +7,9 @@ GmUpdaterReal::GmUpdaterReal () : GmUpdater() {
 GmUpdaterReal::~GmUpdaterReal() {
 };
 
-void GmUpdaterReal::initialize(map<CHARACTERid, MotionState> *char2ms) {
+void GmUpdaterReal::initialize(map<CHARACTERid, MotionState> *char2ms, map<CHARACTERid, Character*> *char2char) {
 	this->char2ms = char2ms;
+	this->char2char = char2char;
 	this->if_initialized = true;
 };
 
@@ -122,19 +123,13 @@ void GmUpdaterReal::updateCharacterAttackPush(CHARACTERid id){
 	this->update(UPDATE_ATTACK, data);
 };
 
-void GmUpdaterReal::updateCharacterAttackPull(int game_id){
-	float pos[3], fdir[3];
-	FnCharacter actor;
-	CHARACTERid id = (this->game2char)[game_id];
-	actor.ID(id);
-	actor.GetPosition(pos);
-	actor.GetDirection(fdir, NULL);
-	Json::Value data;
-	Json::Value jpos;
-	jpos[0] = pos[0]; jpos[1] = pos[1]; jpos[2] = pos[2];
-	data["GAME_ID"] = game_id;
-	data["POS"] = jpos;
-	this->update(UPDATE_CHARACTER, data);
+void GmUpdaterReal::updateCharacterAttackPull(int game_id, float damage){
+	CHARACTERid id = this->game2char[game_id];
+	Character* character = (*(this->char2char))[id];
+	int blood = character->modifyChrBlood(-1 * damage);
+	if (blood) {
+		(*(this->char2ms))[id] = DAMAGED;
+	}
 };
 
 

@@ -3,7 +3,7 @@
 
 CharacterManageSystem::CharacterManageSystem(GmUpdaterReal *game_updater) :m_localPlayerId(NULL) {
 	this->game_updater = game_updater;
-	game_updater->initialize(&(this->m_mapCharacterId2NewState));
+	game_updater->initialize(&(this->m_mapCharacterId2NewState), &(this->m_mapCharacterId2Character));
 }
 
 
@@ -58,6 +58,7 @@ void CharacterManageSystem::updateCharacterInputs(){
 	}
 	if(FyCheckHotKeyStatus(FY_F)){
 		newState = ATTACK;			//player can not move while attacking, so use "=" instead of "|"
+		attack = true;
 		//std::cout<<"attak key\n";
 	}
 
@@ -71,6 +72,10 @@ void CharacterManageSystem::updateCharacterInputs(){
 	if(move) {
 		this->game_updater->updateCharacterPushPosition(m_localPlayerId);
 		this->game_updater->updateCharacterPushDirection(m_localPlayerId, true);
+	}
+
+	if(attack) {
+		this->game_updater->updateCharacterAttackPush(m_localPlayerId);
 	}
 
 	//update other charcter's input state
@@ -92,7 +97,7 @@ void CharacterManageSystem::update(int skip){
 	}
 
 	//check attack
-	{
+	/*{
 //		(m_mapCharacterId2Character[m_mapStrName2CharacterId["Donzo2"] ])->modifyChrBlood(-1);	   //used to test die
 		std::map<CHARACTERid, MotionState>::iterator chrIter = m_mapCharacterId2NewState.begin();
 		for(;chrIter != m_mapCharacterId2NewState.end(); ++chrIter){
@@ -102,7 +107,7 @@ void CharacterManageSystem::update(int skip){
 				this->game_updater->updateCharacterAttackPush(this->m_localPlayerId);
 			}
 		}
-	}
+	}*/
 
 	//update date character's COOL_DOWN
 	{
@@ -131,7 +136,7 @@ Character* CharacterManageSystem::getCameraActor()
 	return m_mapCharacterId2Character[m_localPlayerId];
 }
 
-void CharacterManageSystem::gotAttacked(CHARACTERid characterId,float damage)
+void CharacterManageSystem::gotAttacked(CHARACTERid characterId, float damage)
 {
 	Character* character = m_mapCharacterId2Character[characterId];
 	int blood = character->modifyChrBlood(-1 * damage);

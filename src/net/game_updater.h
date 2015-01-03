@@ -1,4 +1,5 @@
 #pragma once
+
 #include "FlyWin32.h"
 #include <string>
 #include <iostream>
@@ -30,7 +31,7 @@ public:
 	virtual void updateObjectPull(int game_id) = 0;
 
 	virtual void updateCharacterAttackPush(CHARACTERid id) = 0;
-	virtual void updateCharacterAttackPull(int game_id) = 0;
+	virtual void updateCharacterAttackPull(int game_id, float damage) = 0;
 
 	virtual void updateCharacterMotionStatePush(CHARACTERid id, MotionState ms) = 0;
 	virtual void updateCharacterMotionStatePull(int game_id, MotionState ms) = 0;

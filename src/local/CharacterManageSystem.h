@@ -5,10 +5,9 @@
 #include "FightSystem.h"
 #include "net/game_updater_real.h"
 
-class CharacterManageSystem
-{
+class CharacterManageSystem {
 public:
-	CharacterManageSystem(GmUpdaterReal *game_updater);
+	CharacterManageSystem(GmUpdaterReal *);
 	~CharacterManageSystem(void);
 
 	void update(int skip);
@@ -16,7 +15,7 @@ public:
 	bool addCharacter(Character &character, bool isLocalPlayer = false);
 	void removeCharacter(CHARACTERid characterId);
 
-	void gotAttacked(CHARACTERid characterId,float damage);
+	void gotAttacked(CHARACTERid characterId, float damage);
 	int getCharacterblood(CHARACTERid characterId);
 
 	CHARACTERid getActorID();
@@ -24,6 +23,7 @@ public:
 	Character* getCameraActor();
 
 	void changActorByTAB();
+
 private:
 	void updateCharacterInputs();
 

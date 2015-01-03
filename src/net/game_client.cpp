@@ -59,6 +59,7 @@ void GmClient::callback(Json::Value &json) {
 
 			} else if(json[1] == "READY") {
 				this->status = CONNECTED;
+				cout << "READY!!!!" << endl;
 			} else if(json[1] == "ADD_CHARACTER"){
 				cout << "Add Character!!" << endl;
 				// 得到Gm_id, 新增一個Character
@@ -115,6 +116,11 @@ void GmClient::callback(Json::Value &json) {
 				Json::Value data = json[2];
 				int game_id = data["GAME_ID"].asInt();
 				this->game_updater->updateCharacterMotionStatePull(game_id, static_cast<MotionState>(data["MOTION_STATE"].asInt()));
+			} else if(json[1] == "UPDATE_ATTACK") {
+				Json::Value data = json[2];
+				int game_id = data["GAME_ID"].asInt();
+				cout << "UPDATE_ATTACK!!!!!  " << data["DAMAGE"].asInt() << endl;
+				this->game_updater->updateCharacterAttackPull(game_id, data["DAMAGE"].asInt());
 			}
 		}
 	}
