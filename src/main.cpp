@@ -4,13 +4,8 @@
 #include "Character.h"
 #include "CharacterManageSystem.h"
 #include "Camera.h"
+#include "Mouse.h"
 
-#define window_w 1024
-#define window_h 768
-#define sight_w 83
-#define sight_h 66
-#define mouse_w 20
-#define mouse_h 30
 
 VIEWPORTid viewportID;	//major viewe port
 SCENEid sceneID;	//3d scene
@@ -32,17 +27,28 @@ SCENEid sID2menu;                // the 2D scene
 
 CharacterManageSystem chrMgtSystem;
 
+Mouse mouseInput;
 
 BOOL4 DIR_KEYDOWN[4] = {FALSE, FALSE, FALSE, FALSE};
 BOOL4 first_switch_action = FALSE;
 
 char dbg_msgS[256];
 
+//music
+AUDIOid bckMiscID, bottonMiscID;
+
 //global value
 
 int stateMenu = 0;
 
 int frame = 0;
+
+int window_w = 1024;
+int window_h = 768;
+int sight_w = 83;
+int sight_h = 66;
+int mouse_w = 20;
+int mouse_h = 30;
 
 int oldX, oldY, oldXM, oldYM, oldXMM, oldYMM;
 std::map<MotionState, ACTIONid> state2ActionTable;
@@ -66,6 +72,7 @@ void ZoomCam(int, int);
 void ChangeActor(BYTE code, BOOL4 value);
 void setCamera();
 void showMenu(BYTE code, BOOL4 value);
+void updateMousePos(int, int);
 
 void FyMain(int argc, char **argv)
 {
