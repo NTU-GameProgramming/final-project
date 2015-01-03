@@ -9,6 +9,7 @@ using namespace std;
 
 enum EVENT {
 	UPDATE_CHARACTER,
+	UPDATE_CHARACTER_DIRECTION,
 	UPDATE_OBJECT,
 	UPDATE_MOTION_STATE,
 	UPDATE_ATTACK
@@ -24,6 +25,10 @@ public:
 
 	void updateCharacterPushPosition(CHARACTERid game_id);
 	void updateCharacterPullPosition(int game_id, float *pos);
+	
+	void updateCharacterPushDirection(CHARACTERid id, bool fdir=false, bool udir=false);
+	void updateCharacterPullDirection(int game_id, float *fdir, float *udir);
+
 	void updateObjectPush(int game_id);
 	void updateObjectPull(int game_id);
 

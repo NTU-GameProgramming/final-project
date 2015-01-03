@@ -91,8 +91,30 @@ void GmClient::callback(Json::Value &json) {
 				game_id = data["GAME_ID"].asInt();
 				jpos = data["POS"];
 				pos[0] = jpos[0].asFloat(); pos[1] = jpos[1].asFloat(); pos[2] = jpos[2].asFloat();
-				cout << "[GameClient] (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")" << endl;
+				//cout << "[GameClient] (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")" << endl;
 				this->game_updater->updateCharacterPullPosition(game_id, pos);
+			} else if(json[1] == "UPDATE_CHARACTER_DIRECTION") {
+
+				Json::Value data = json[2];
+				Json::Value jfdir = data["FDIR"], judir = data["UDIR"];
+				int game_id = data["GAME_ID"].asInt();
+				float fdir[3], udir[3];
+
+				if(jfdir.isArray()) {
+					fdir[0] = jfdir[0].asFloat(); fdir[1] = jfdir[1].asFloat(); fdir[2] = jfdir[2].asFloat();
+				}
+				
+				if(judir.isArray()) {
+					udir[0] = judir[0].asFloat(); udir[1] = judir[1].asFloat(); udir[2] = judir[2].asFloat();
+				}
+
+				//cout << "jfdir.isArray() ? fdir : NULL  = " << (jfdir.isArray() ? fdir : NULL) << endl;
+
+				this->game_updater->updateCharacterPullDirection(game_id, jfdir.isArray() ? fdir : NULL, judir.isArray() ? udir : NULL);
+			} else if(json[1] == "UPDATE_MOTION_STATE") {
+				Json::Value data = json[2];
+				int game_id = data["GAME_ID"].asInt();
+				this->game_updater->updateCharacterMotionStatePull(game_id, static_cast<MotionState>(data["MOTION_STATE"].asInt()));
 			}
 		}
 	}

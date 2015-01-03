@@ -23,8 +23,8 @@ public:
 	virtual void updateCharacterPushPosition(CHARACTERid id) = 0;
 	virtual void updateCharacterPullPosition(int game_id, float *pos) = 0;
 
-	//virtual void updateCharacterPushDirection(CHARACTERid id) = 0;
-	//virtual void updateCharacterPullDirection(int game_id, float *pos) = 0;
+	virtual void updateCharacterPushDirection(CHARACTERid id, bool fdir=false, bool udir=false) = 0;
+	virtual void updateCharacterPullDirection(int game_id, float *fdir, float *udir) = 0;
 
 	virtual void updateObjectPush(int game_id) = 0;
 	virtual void updateObjectPull(int game_id) = 0;

@@ -70,6 +70,7 @@ void CharacterManageSystem::updateCharacterInputs(){
 
 	if(move) {
 		this->game_updater->updateCharacterPushPosition(m_localPlayerId);
+		this->game_updater->updateCharacterPushDirection(m_localPlayerId, true);
 	}
 
 	//update other charcter's input state

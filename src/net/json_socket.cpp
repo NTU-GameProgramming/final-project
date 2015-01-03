@@ -76,7 +76,7 @@ int JsonSocket::beginConnect() {
             return 1;
         }  else { // Check port
 			srand(time(NULL));
-			for(int port = 2000 + rand() % 100;; ++port) {
+/*			for(int port = 2000 + rand() % 100;; ++port) {
 				cout << "Check port: " << port << endl;
 				sockaddr_in localAddr;
 				localAddr.sin_family = AF_INET;
@@ -90,7 +90,8 @@ int JsonSocket::beginConnect() {
 					//system("pause");
 					break;
 				}
-			}
+			}*/
+			
 		}
 		//u_long mode = 1;
 		//ioctlsocket( ConnectSocket, FIONBIO, &mode);

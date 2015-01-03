@@ -18,6 +18,9 @@ void GmUpdaterReal::update(enum EVENT evt, Json::Value &json) {
 	case UPDATE_CHARACTER:
 		evt_str = "UPDATE_CHARACTER";
 		break;
+	case UPDATE_CHARACTER_DIRECTION:
+		evt_str = "UPDATE_CHARACTER_DIRECTION";
+		break;
 	case UPDATE_OBJECT:
 		evt_str = "UPDATE_OBJECT";
 	case UPDATE_MOTION_STATE:
@@ -56,6 +59,48 @@ void GmUpdaterReal::updateCharacterPullPosition(int game_id, float *pos){
 	FnCharacter actor;
 	actor.ID(this->game2char[game_id]);
 	actor.SetPosition(pos);
+};
+
+
+void GmUpdaterReal::updateCharacterPushDirection(CHARACTERid id, bool fdir, bool udir){
+	float dir[3];
+	FnCharacter actor;
+	Json::Value data;
+	Json::Value jdir;
+
+	actor.ID(id);
+	data["GAME_ID"] = this->char2game[id];
+	if(fdir) {
+		actor.GetDirection(dir, NULL);
+		jdir[0] = dir[0]; jdir[1] = dir[1]; jdir[2] = dir[2];
+		data["FDIR"] = jdir;
+	} else {
+		data["FDIR"] = Json::nullValue;
+	}
+
+	if(udir) {
+		actor.GetDirection(NULL, dir);
+		jdir[0] = dir[0]; jdir[1] = dir[1]; jdir[2] = dir[2];
+		data["UDIR"] = jdir;
+	} else {
+		data["UDIR"] = Json::nullValue;
+	}
+
+	this->update(UPDATE_CHARACTER_DIRECTION, data);
+};
+
+void GmUpdaterReal::updateCharacterPullDirection(int game_id, float *fdir, float *udir){
+	FnCharacter actor;
+	actor.ID(this->game2char[game_id]);
+
+	if(fdir != NULL) {
+		actor.SetDirection(fdir, NULL);
+	}
+
+	if(udir != NULL) {
+		actor.SetDirection(NULL, udir);
+	}
+	
 };
 
 void GmUpdaterReal::updateObjectPush(int game_id){

@@ -11,6 +11,8 @@
 #define window_h 768
 #define sight_w 83
 #define sight_h 66
+#define GAME_PROGRAMMING_DEFAULT_IP "140.112.67.117"
+#define GAME_PROGRAMMING_DEFAULT_PORT "8976"
 
 
 GmClient game_client;
@@ -66,17 +68,19 @@ void ChangeActor(BYTE code, BOOL4 value);
 void setCamera();
 
 void FyMain(int argc, char **argv) {
-	AllocConsole();
-	freopen("CONOUT$", "w", stdout);
+
+	AllocConsole(); 
 	freopen("CONIN$", "r", stdin);
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
 	string ip, port;
-	cout << "Enter ip   [127.0.0.1]: ";getline(cin, ip);
-	cout << "Enter port [8976     ]: ";getline(cin, port);
+	cout << "Enter ip   [" << GAME_PROGRAMMING_DEFAULT_IP << "]: ";getline(cin, ip);
+	cout << "Enter port [" << GAME_PROGRAMMING_DEFAULT_PORT << "]: ";getline(cin, port);
 
-	if(ip.empty()) {ip = "127.0.0.1";}
-	if(port.empty()) {port = "8976";}
+	if(ip.empty()) {ip = GAME_PROGRAMMING_DEFAULT_IP;}
+	if(port.empty()) {port = GAME_PROGRAMMING_DEFAULT_PORT;}
 
-	cout << "Connect to server..." << endl;
+	cout << "Connect to server: " << ip << "/" << port << endl;
 	game_client.initialize(ip, port, &game_updater);
 	game_client.connectServer();
 	cout << "Server connected." << endl;
@@ -86,10 +90,10 @@ void FyMain(int argc, char **argv) {
 	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, 1024, 768, FALSE);
 	//std::cout << "Window initiated" << std::endl; system("pause");
 	//set up path
-	FySetShaderPath("Data\\NTU5\\Shaders");
-	FySetModelPath("Data\\NTU5\\Scenes");
-	FySetTexturePath("Data\\NTU5\\Scenes\\Textures");
-	FySetScenePath("Data\\NTU5\\Scenes");
+	FySetShaderPath("C:\\Fly2Data\\NTU5\\Shaders");
+	FySetModelPath("C:\\Fly2Data\\NTU5\\Scenes");
+	FySetTexturePath("C:\\Fly2Data\\NTU5\\Scenes\\Textures");
+	FySetScenePath("C:\\Fly2Data\\NTU5\\Scenes");
 	//std::cout << "Path set" << std::endl; system("pause");
 	//create a viewport
 	viewportID = FyCreateViewport(0, 0, 1024, 768);
@@ -112,7 +116,7 @@ void FyMain(int argc, char **argv) {
     spID0 = scene2D.CreateObject(SPRITE);
     sp.Object(spID0);
 	sp.SetSize(sight_w, sight_h);
-    sp.SetImage("spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+    sp.SetImage("C:\\Fly2Data\\Img\\spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
 	sp.SetPosition(window_w/2-sight_w/2, window_h/2-sight_h/2, 0);
 
 
@@ -137,9 +141,9 @@ void FyMain(int argc, char **argv) {
 	uDir[0] = 0, uDir[1] = 0, uDir[2] = 1;
 
 	//load the character
-	FySetModelPath("Data\\NTU5\\Characters");
-	FySetTexturePath("Data\\NTU5\\Characters");
-	FySetCharacterPath("Data\\NTU5\\Characters");
+	FySetModelPath("C:\\Fly2Data\\NTU5\\Characters");
+	FySetTexturePath("C:\\Fly2Data\\NTU5\\Characters");
+	FySetCharacterPath("C:\\Fly2Data\\NTU5\\Characters");
 
 	//std::cout << "Path set again" << std::endl; system("pause");
 	//依據GameTree來新增
@@ -205,6 +209,12 @@ void FyMain(int argc, char **argv) {
    FyInvokeFly(TRUE);
    
    system("pause");
+
+   fclose(stdout);
+   fclose(stderr);
+   fclose(stdin);
+   //FreeConsole();
+
 }
 
 

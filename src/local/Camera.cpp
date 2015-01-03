@@ -227,22 +227,3 @@ void moveCamera(int action, OBJECTid tID, OBJECTid cID, OBJECTid dummyID, OBJECT
 		camera.SetDirection(fDir, NULL);
 	}
 }
-
-/*
-		!Camera(void);
-
-		void GameAIupdate(int skip);
-
-		OBJECTid getCameraId(){
-			return camera_id;
-		}
-
-		OBJECTid getCameraBaseId(){
-			return camera_base_id;
-		}
-
-	private:
-		SCENEid scene_id;
-		OBJECTid camera_id, camera_base_id;
-}
-*/
