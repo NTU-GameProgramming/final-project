@@ -142,7 +142,7 @@ void FyMain(int argc, char **argv) {
     spID0 = scene2D.CreateObject(SPRITE);
     sp.Object(spID0);
 	sp.SetSize(sight_w, sight_h);
-    sp.SetImage("C:\\Fly2Data\\Image\\spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+    sp.SetImage("spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
 	sp.SetPosition(window_w/2-sight_w/2, window_h/2-sight_h/2, 0);
 
 	FnScene scene2Dmenu;
@@ -153,17 +153,17 @@ void FyMain(int argc, char **argv) {
 	FnSprite spExit;
     OBJECTid spIDexit = scene2Dmenu.CreateObject(SPRITE);
     spExit.Object(spIDexit);
-	spExit.SetSize(135, 23);
+	spExit.SetSize(400, 70);
     spExit.SetImage("exit_button", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
-	spExit.SetPosition(window_w/2-135/2, window_h/2-23/2, 0);
-
+	spExit.SetPosition(window_w/2-400/2, window_h/2-70/2, 0);
+	/*
 	FnSprite sp1;
     spID1 = scene2Dmenu.CreateObject(SPRITE);
     sp1.Object(spID1);
 	sp1.SetSize(mouse_w, mouse_h);
     sp1.SetImage("mouse", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
 	sp1.SetPosition(window_w/2-mouse_w/2, window_h/2-mouse_h/2, 0);
-
+	*/
 	//load the terrain
 	terrainID = scene.CreateObject(OBJECT);
 	FnObject terrain;
@@ -239,10 +239,7 @@ void FyMain(int argc, char **argv) {
 	fnAudio.SetVolume(0.1);
 	fnAudio.Play(LOOP);
 
-	bottonMiscID = FyCreateAudio();
-	FnAudio fnBottonAudio(bottonMiscID);
-	fnBottonAudio.Load("menu_botton_on");
-
+	mouseInput.hideMouse();
    // set Hotkeys
    /*
    FyDefineHotKey(FY_ESCAPE, QuitGame, FALSE);  // escape for quiting the game
@@ -417,6 +414,18 @@ void InitPivot(int x, int y)
    oldX = x;
    oldY = y;
    frame = 0;
+   if(stateMenu)
+   {
+	   if ((x > window_w/2-400/2&&x < window_w/2-400/2+400)&&(y > window_h/2-70/2&&y < window_h/2-70/2+70))
+	   {
+			bottonMiscID = FyCreateAudio();
+			FnAudio fnBottonAudio(bottonMiscID);
+			fnBottonAudio.Load("menu_botton_on");
+			fnBottonAudio.SetVolume(0.1);
+			fnBottonAudio.Play(ONCE);
+			FyQuitFlyWin32();
+	   }
+   }
 }
 
 
