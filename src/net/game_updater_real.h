@@ -22,7 +22,7 @@ public:
 	GmUpdaterReal();
 	~GmUpdaterReal();
 	
-	void initialize(map<CHARACTERid, MotionState> *char2ms, map<CHARACTERid, Character*> *char2char);
+	void initialize(map<CHARACTERid, int> *char2ms, map<CHARACTERid, Character*> *char2char);
 
 	void updateCharacterPushPosition(CHARACTERid game_id);
 	void updateCharacterPullPosition(int game_id, float *pos);
@@ -36,13 +36,13 @@ public:
 	void updateCharacterAttackPush(CHARACTERid id);
 	void updateCharacterAttackPull(int game_id, float damage);
 	
-	void updateCharacterMotionStatePush(CHARACTERid id, MotionState ms);
-	void updateCharacterMotionStatePull(int game_id, MotionState ms);
+	void updateCharacterMotionStatePush(CHARACTERid id, int ms);
+	void updateCharacterMotionStatePull(int game_id, int ms);
 	
 	void update(enum EVENT, Json::Value &);
 private:
 
-	map<CHARACTERid, MotionState> *char2ms;
+	map<CHARACTERid, int> *char2ms;
 	map<CHARACTERid, Character*> *char2char;
 	bool if_initialized;
 };

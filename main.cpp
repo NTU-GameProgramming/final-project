@@ -6,25 +6,24 @@
 #include "local/Camera.h"
 #include "net/game_client.h"
 #include "net/game_updater_real.h"
+#include "Mouse.h"
 
-#define window_w 1024
-#define window_h 768
-#define sight_w 83
-#define sight_h 66
 #define GAME_PROGRAMMING_DEFAULT_IP "140.112.67.117"
 #define GAME_PROGRAMMING_DEFAULT_PORT "8976"
 
-
 GmClient game_client;
 GmUpdaterReal game_updater;
+
+
 
 VIEWPORTid viewportID;	//major viewe port
 SCENEid sceneID;	//3d scene
 OBJECTid cameraID, cameraBaseID, terrainID, lightID;
 CHARACTERid actorID;
 ACTIONid idleID, runID, curPoseID;
-
 OBJECTid spID0 = FAILED_ID;
+OBJECTid spID1 = FAILED_ID;
+
 
 ROOMid terrainRoomID = FAILED_ID;
 TEXTid textID = FAILED_ID;
@@ -32,18 +31,37 @@ TEXTid textCharID = FAILED_ID;
 TEXTid textHP_vID = FAILED_ID;
 TEXTid textInfo_vID = FAILED_ID;
 Camera camera;
-
 SCENEid sID2;                // the 2D scene
+SCENEid sID2menu;                // the 2D scene
 
 CharacterManageSystem chrMgtSystem(&game_updater);
+
+Mouse mouseInput;
 
 BOOL4 DIR_KEYDOWN[4] = {FALSE, FALSE, FALSE, FALSE};
 BOOL4 first_switch_action = FALSE;
 
 char dbg_msgS[256];
 
+//music
+AUDIOid bckMiscID, bottonMiscID;
+
 //global value
+
+int stateMenu = 0;
+
 int frame = 0;
+
+int wndWidth = 1024;
+int wndHeight = 768;
+int window_w = 1024;
+int window_h = 768;
+int viewPortWidth = 1024;
+int viewPortHeight = 768;
+int sight_w = 83;
+int sight_h = 66;
+int mouse_w = 20;
+int mouse_h = 30;
 
 int oldX, oldY, oldXM, oldYM, oldXMM, oldYMM;
 std::map<MotionState, ACTIONid> state2ActionTable;
@@ -66,9 +84,12 @@ void InitZoom(int, int);
 void ZoomCam(int, int);
 void ChangeActor(BYTE code, BOOL4 value);
 void setCamera();
+void showMenu(BYTE code, BOOL4 value);
+void updateMousePos(int, int);
 
-void FyMain(int argc, char **argv) {
-
+void FyMain(int argc, char **argv)
+{
+	
 	AllocConsole(); 
 	freopen("CONIN$", "r", stdin);
 	freopen("CONOUT$", "w", stdout);
@@ -87,18 +108,20 @@ void FyMain(int argc, char **argv) {
 
 	std::cout<<"Start Game" << std::endl;
 	//create a new window
-	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, 1024, 768, FALSE);
-	//std::cout << "Window initiated" << std::endl; system("pause");
+	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, window_w, window_h, FALSE);
+	
 	//set up path
-	FySetShaderPath("C:\\Fly2Data\\NTU5\\Shaders");
-	FySetModelPath("C:\\Fly2Data\\NTU5\\Scenes");
-	FySetTexturePath("C:\\Fly2Data\\NTU5\\Scenes\\Textures");
-	FySetScenePath("C:\\Fly2Data\\NTU5\\Scenes");
-	//std::cout << "Path set" << std::endl; system("pause");
+	FySetShaderPath("C:\\Fly2Data\\Shaders");
+	FySetModelPath("C:\\Fly2Data\\Scenes");
+	FySetTexturePath("C:\\Fly2Data\\Scenes\\Textures");
+	FySetScenePath("C:\\Fly2Data\\Scenes");
+	FySetAudioPath("C:\\Fly2Data\\Audio");
+
 	//create a viewport
-	viewportID = FyCreateViewport(0, 0, 1024, 768);
+	viewportID = FyCreateViewport(0, 0, viewPortWidth, viewPortHeight);
 	FnViewport viewport(viewportID);
 
+	mouseInput.setWindowSize(wndWidth, wndHeight);
 	//create 3D scene
 	sceneID = FyCreateScene(10);
 	FnScene scene(sceneID);
@@ -106,7 +129,7 @@ void FyMain(int argc, char **argv) {
 	scene.Load("gameScene01");
 	scene.SetAmbientLights(1.0f, 1.0f, 1.0f, 0.6f, 0.6f, 0.6f);
 
-	// create a 2D scene for sprite rendering which will be rendered on the top of 3D
+	 // create a 2D scene for sprite rendering which will be rendered on the top of 3D
     FnScene scene2D;
     sID2 = FyCreateScene(1);
     scene2D.Object(sID2);
@@ -116,11 +139,28 @@ void FyMain(int argc, char **argv) {
     spID0 = scene2D.CreateObject(SPRITE);
     sp.Object(spID0);
 	sp.SetSize(sight_w, sight_h);
-    sp.SetImage("C:\\Fly2Data\\Img\\spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+    sp.SetImage("C:\\Fly2Data\\Image\\spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
 	sp.SetPosition(window_w/2-sight_w/2, window_h/2-sight_h/2, 0);
 
+	FnScene scene2Dmenu;
+	sID2menu = FyCreateScene(1);
+    scene2Dmenu.Object(sID2menu);
+    scene2Dmenu.SetSpriteWorldSize(1024, 768);         // 2D scene size in pixels
 
-//	std::cout << "GameScene loaded" << std::endl; system("pause");
+	FnSprite spExit;
+    OBJECTid spIDexit = scene2Dmenu.CreateObject(SPRITE);
+    spExit.Object(spIDexit);
+	spExit.SetSize(135, 23);
+    spExit.SetImage("exit_button", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+	spExit.SetPosition(window_w/2-135/2, window_h/2-23/2, 0);
+
+	FnSprite sp1;
+    spID1 = scene2Dmenu.CreateObject(SPRITE);
+    sp1.Object(spID1);
+	sp1.SetSize(mouse_w, mouse_h);
+    sp1.SetImage("mouse", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+	sp1.SetPosition(window_w/2-mouse_w/2, window_h/2-mouse_h/2, 0);
+
 	//load the terrain
 	terrainID = scene.CreateObject(OBJECT);
 	FnObject terrain;
@@ -134,20 +174,18 @@ void FyMain(int argc, char **argv) {
 	room.ID(terrainRoomID);
 	room.AddObject(terrainID);
 
+	//load the character
+	FySetModelPath("C:\\Fly2Data\\Characters");
+	FySetTexturePath("C:\\Fly2Data\\Characters");
+	FySetCharacterPath("C:\\Fly2Data\\Characters");
+
    // put the character on terrain
    float pos[3], fDir[3], uDir[3];
 	pos[0] = 3569.0, pos[1] = -3108; pos[2] = 0;
 	fDir[0] = 1, fDir[1] = 0; fDir[2] = 0;
 	uDir[0] = 0, uDir[1] = 0, uDir[2] = 1;
 
-	//load the character
-	FySetModelPath("C:\\Fly2Data\\NTU5\\Characters");
-	FySetTexturePath("C:\\Fly2Data\\NTU5\\Characters");
-	FySetCharacterPath("C:\\Fly2Data\\NTU5\\Characters");
 
-	//std::cout << "Path set again" << std::endl; system("pause");
-	//依據GameTree來新增
-	// 目前只有兩個腳色，之後需要把enemy換成vector
 	Character actor, ememy;
 	map<int, GmCharacter*> charNode = game_client.getGmTree().getCharacterNode();
 	cout << "Number of Character: " << charNode.size() << endl;
@@ -170,10 +208,13 @@ void FyMain(int argc, char **argv) {
 			game_updater.registerCharacter(it->second->game_id, ememy.getCharacterId());
 		}
     }
-	//std::cout << "Character set." << std::endl; system("pause");
-	//初始化人物 注意cameraID要重設
+
+	cameraID = scene.CreateObject(CAMERA);
+	FnCamera camera;
+	camera.ID(cameraID);
+	camera.SetNearPlane(5.0f);
+	camera.SetFarPlane(100000.0f);
 	setCamera();
-	//std::cout << "Camera set." << std::endl; system("pause");
    // setup a point light
    /*
    FnLight light;
@@ -182,11 +223,24 @@ void FyMain(int argc, char **argv) {
    light.Translate(70.0f, -70.0f, 70.0f, REPLACE);
    light.SetColor(1.0f, 1.0f, 1.0f);
    light.SetIntensity(1.0f);
-   *//*
+   */
    //create a text object for display message on screen
    textID = FyCreateText("Trebuchet MS", 18, FALSE, FALSE);
-   textCharID = FyCreateText("Trebuchet MS", 40, TRUE, FALSE);
-   */
+   textCharID = FyCreateText("Trebuchet MS", 20, TRUE, FALSE);
+   textHP_vID = FyCreateText("Trebuchet MS", 60, TRUE, FALSE);
+   textInfo_vID = FyCreateText("Trebuchet MS", 30, TRUE, FALSE);
+
+   //set up audio
+	bckMiscID = FyCreateAudio();
+	FnAudio fnAudio(bckMiscID);
+	fnAudio.Load("game_bckgnd");
+	fnAudio.SetVolume(0.1);
+	fnAudio.Play(LOOP);
+
+	bottonMiscID = FyCreateAudio();
+	FnAudio fnBottonAudio(bottonMiscID);
+	fnBottonAudio.Load("menu_botton_on");
+
    // set Hotkeys
    /*
    FyDefineHotKey(FY_ESCAPE, QuitGame, FALSE);  // escape for quiting the game
@@ -194,21 +248,22 @@ void FyMain(int argc, char **argv) {
    FyDefineHotKey(FY_RIGHT, Movement, FALSE);   // Right for turning right
    FyDefineHotKey(FY_LEFT, Movement, FALSE);    // Left for turning left
    FyDefineHotKey(FY_DOWN, Movement, FALSE);    // Down for moving backward
-	*//*
+	*/
    FyDefineHotKey(FY_TAB, ChangeActor, FALSE);
+   FyDefineHotKey(FY_ESC, showMenu, FALSE);
    //define some mouse function
    FyBindMouseFunction(LEFT_MOUSE, InitPivot, PivotCam, NULL, NULL);
    FyBindMouseFunction(MIDDLE_MOUSE, InitZoom, ZoomCam, NULL, NULL);
    FyBindMouseFunction(RIGHT_MOUSE, InitMove, MoveCam, NULL, NULL);
-   */
+
    //bind timers, frame rate = 30 fps
    FyBindTimer(0, 30.0f, GameAI, TRUE);
    FyBindTimer(1, 30.0f, RenderIt, TRUE);
-   
+
 	//invoke the system
    FyInvokeFly(TRUE);
-   
-   system("pause");
+
+     system("pause");
 
    fclose(stdout);
    fclose(stderr);
@@ -223,14 +278,16 @@ void FyMain(int argc, char **argv) {
   30fps timer callback in fixed frame rate for major game loop
   C.Wang 1103, 2007
  --------------------------------------------------------------*/
-void GameAI(int skip){
-	chrMgtSystem.update(skip); //人物狀態的更新
-	actorID = chrMgtSystem.getActorID();
-   //Camera狀態的更新
-	camera.GameAIupdate(skip);
-	//camera.resetCamera();
-	//game_updater.updateCharacterPush(actorID);
-	game_client.update();
+void GameAI(int skip)
+{
+	if (!stateMenu)
+	{
+		chrMgtSystem.update(skip); //人物狀態的更新
+		actorID = chrMgtSystem.getActorID();
+		//Camera狀態的更新
+		camera.update(skip);
+		game_client.update();
+	}
 }
 
 void RenderIt(int skip){
@@ -238,11 +295,16 @@ void RenderIt(int skip){
 
 	FnViewport vp;
 
+	mouseInput.update();
+
 	//render the whole scene
 	vp.ID(viewportID);
 	vp.Render3D(cameraID, TRUE, TRUE);
-	vp.RenderSprites(sID2, FALSE, TRUE);  // no clear the background but clear the z buffer
-
+	if(stateMenu)
+		vp.RenderSprites(sID2menu, FALSE, TRUE);  // no clear the background but clear the z buffer
+	else
+		vp.RenderSprites(sID2, FALSE, TRUE);  // no clear the background but clear the z buffer
+	
 	//show frame rate
 	static char string[128];
 	if(frame == 0){
@@ -271,24 +333,23 @@ void RenderIt(int skip){
 	text.Write(string, 20, 20, 255, 0, 0);
 
 	//get camera's data
-	camera.getCamera().GetPosition(pos);
-	camera.getCamera().GetDirection(fDir, uDir);
+	camera.getCameraPos(pos);
+	camera.getCameraDir(fDir, uDir);
+
+	float fCameraAngle = camera.getCameraAngle();
 
 	char posS[256], fDirS[256], uDirS[256];
 	sprintf_s(posS, "pos: %8.3f %8.3f %8.3f", pos[0], pos[1], pos[2]);
 	sprintf_s(fDirS, "facing: %8.3f %8.3f %8.3f", fDir[0], fDir[1], fDir[2]);
 	sprintf_s(uDirS, "up: %8.3f %8.3f %8.3f", uDir[0], uDir[1], uDir[2]);
 
-    text.Write(posS, 20, 35, 255, 255, 0);
-    text.Write(fDirS, 20, 50, 255, 255, 0);
-    text.Write(uDirS, 20, 65, 255, 255, 0);
-
-	//get camera base's data
-	camera.getCameraBase().GetPosition(pos);
-	camera.getCameraBase().GetDirection(fDir, uDir);
-	sprintf_s(posS, "pos: %8.3f %8.3f %8.3f", pos[0], pos[1], pos[2]);
-	sprintf_s(fDirS, "facing: %8.3f %8.3f %8.3f", fDir[0], fDir[1], fDir[2]);
-	sprintf_s(uDirS, "up: %8.3f %8.3f %8.3f", uDir[0], uDir[1], uDir[2]);
+	char sCameraAngle[256], sMousePosX[256], sMousePosY[256];
+	sprintf_s(sCameraAngle, "camera angle: %8.3f", fCameraAngle);
+	sprintf_s(sMousePosX, "mouse X %d ", mouseInput.mousePosX);
+	sprintf_s(sMousePosY, "mouse Y %d ", mouseInput.mousePosY);
+	text.Write(sCameraAngle, 20, 35, 255, 255, 0);
+	text.Write(sMousePosX, 20, 50, 255, 255, 0);
+	text.Write(sMousePosY, 20, 65, 255, 255, 0);
     
 	text.Write(posS, 20, 80, 255, 255, 0);
     text.Write(fDirS, 20, 95, 255, 255, 0);
@@ -379,6 +440,10 @@ void PivotCam(int x, int y)
    }
 }
 
+void updateMousePos(int x, int y){
+	mouseInput.setMouseNewPos(x, y);
+}
+
 
 /*----------------------------------
   initialize the move of the camera
@@ -443,6 +508,15 @@ void ZoomCam(int x, int y)
    }
 }
 
+void showMenu(BYTE code, BOOL4 value)
+{
+	if (value)
+	{
+		stateMenu = stateMenu ? 0 : 1;
+
+	}
+}
+
 void ChangeActor(BYTE code, BOOL4 value)
 {
 	if (value)
@@ -453,16 +527,10 @@ void ChangeActor(BYTE code, BOOL4 value)
 	}
 }
 
-void setCamera() {
+void setCamera()
+{
 	//初始化攝影機
-	//std::cout << "setCamera()" << std::endl; system("pause");
-	camera.initialize(sceneID, terrainID, chrMgtSystem.getCameraActor());
-	//std::cout << "Camera initialize" << std::endl; system("pause");
-	cameraID = camera.getCameraId();
-	//std::cout << "getCameraId()" << std::endl; system("pause");
-	cameraBaseID = camera.getCameraBaseId();
-	//std::cout << "cameraBaseID" << std::endl; system("pause");
+	camera.initialize(cameraID, terrainID, chrMgtSystem.getCameraActor());
 	//放好相機
 	camera.resetCamera();
-	//std::cout << "resetCamera()" << std::endl; system("pause");
 }

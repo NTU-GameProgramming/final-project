@@ -1,11 +1,16 @@
 #pragma once
 
+
 #include <string>
 #include "Character.h"
-#include "FightSystem.h"
+#include "Mouse.h"
 #include "net/game_updater_real.h"
 
+extern Mouse mouseInput;
+extern int wndWidth, wndHeight;
+
 class CharacterManageSystem {
+
 public:
 	CharacterManageSystem(GmUpdaterReal *);
 	~CharacterManageSystem(void);
@@ -29,9 +34,8 @@ private:
 
 private:
 	std::map<CHARACTERid, Character*> m_mapCharacterId2Character;
-	std::map<CHARACTERid, MotionState> m_mapCharacterId2NewState;
+	std::map<CHARACTERid, int> m_mapCharacterId2NewState;
 	std::map<std::string, CHARACTERid> m_mapStrName2CharacterId; 
-	FightSystem m_FightSystem;
 	CHARACTERid m_localPlayerId;
 	GmUpdaterReal *game_updater;
 };

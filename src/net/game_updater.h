@@ -33,8 +33,8 @@ public:
 	virtual void updateCharacterAttackPush(CHARACTERid id) = 0;
 	virtual void updateCharacterAttackPull(int game_id, float damage) = 0;
 
-	virtual void updateCharacterMotionStatePush(CHARACTERid id, MotionState ms) = 0;
-	virtual void updateCharacterMotionStatePull(int game_id, MotionState ms) = 0;
+	virtual void updateCharacterMotionStatePush(CHARACTERid id, int ms) = 0;
+	virtual void updateCharacterMotionStatePull(int game_id, int ms) = 0;
 
 	virtual
 

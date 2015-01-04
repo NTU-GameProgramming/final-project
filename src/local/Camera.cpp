@@ -1,5 +1,100 @@
 #include "Camera.h"
+Camera::Camera(){
+	m_fMouseSensy = 0.005;
+	m_fMaxVerAngle = 0.5;
+	m_fMinVerAngle = -0.8;
+	m_fMaxVerAngleVel = 0.04;
+}
 
+void Camera::initialize(OBJECTid cameraId, OBJECTid terrianId, Character* parent){
+	m_pParent = parent;
+	m_nParentId = parent->getCharacterId();
+	m_nCameraId = cameraId;
+
+	m_fnCamera.ID(cameraId);
+	m_fnParent.ID(m_nParentId);
+}
+
+void Camera::update(int skip){
+	int mouseVelY = -mouseInput.mouseVelY;
+	mouseInput.mouseVelY = 0;
+
+	float fAngleVel = mouseVelY*m_fMouseSensy;
+
+	if (fAngleVel > m_fMaxVerAngleVel){
+		fAngleVel = m_fMaxVerAngleVel;
+	}
+	if (fAngleVel < -m_fMaxVerAngleVel){
+		fAngleVel = -m_fMaxVerAngleVel;
+	}
+	float fNewVerAngle = m_fVerAngle + fAngleVel;
+	if (fNewVerAngle > m_fMaxVerAngle){
+		fNewVerAngle = m_fMaxVerAngle;
+	}
+	if (fNewVerAngle < m_fMinVerAngle){
+		fNewVerAngle = m_fMinVerAngle;
+	}
+
+
+	//set camera direction
+	float parentFDir[3], parentUDir[3];
+	m_fnParent.GetDirection(parentFDir, parentUDir);
+	float fDirNorm = std::sqrt(parentFDir[0] * parentFDir[0] +
+		parentFDir[1] * parentFDir[1] +
+		parentFDir[2] * parentFDir[2]);
+
+	float uDirNorm = std::sqrt(parentUDir[0] * parentUDir[0] +
+		parentUDir[1] * parentUDir[1] +
+		parentUDir[2] * parentUDir[2]);
+
+	float up2frontRatio = std::tan(fNewVerAngle);
+	float cameraFDir[3], cameraUDir[3];
+
+	cameraFDir[0] = (up2frontRatio / uDirNorm)*parentUDir[0] + (1 / fDirNorm)*parentFDir[0];
+	cameraFDir[1] = (up2frontRatio / uDirNorm)*parentUDir[1] + (1 / fDirNorm)*parentFDir[1];
+	cameraFDir[2] = (up2frontRatio / uDirNorm)*parentUDir[2] + (1 / fDirNorm)*parentFDir[2];
+
+	cameraUDir[0] = -(up2frontRatio / fDirNorm)*parentFDir[0] + (1 / uDirNorm)*parentUDir[0];
+	cameraUDir[1] = -(up2frontRatio / fDirNorm)*parentFDir[1] + (1 / uDirNorm)*parentUDir[1];
+	cameraUDir[2] = -(up2frontRatio / fDirNorm)*parentFDir[2] + (1 / uDirNorm)*parentUDir[2];
+
+	m_fnCamera.SetDirection(cameraFDir, cameraUDir);
+
+	//set camera position
+	float parentPos[3];
+	m_fnParent.GetPosition(parentPos);
+	parentPos[2] += m_pParent->getCharacterHeight();
+	m_fnCamera.SetPosition(parentPos);
+
+	m_pos[0] = parentPos[0];
+	m_pos[1] = parentPos[1];
+	m_pos[2] = parentPos[2];
+
+	m_uDir[0] = cameraUDir[0];
+	m_uDir[1] = cameraUDir[1];
+	m_uDir[2] = cameraUDir[2];
+
+	m_fDir[0] = cameraFDir[0];
+	m_fDir[1] = cameraFDir[1];
+	m_fDir[2] = cameraFDir[2];
+
+	m_fVerAngle = fNewVerAngle;
+}
+
+
+void Camera::resetCamera() {
+	float pos[3], fDir[3], uDir[3];
+
+	// set camera_base position and direction
+	m_fnCamera.GetPosition(pos);
+	pos[2] += m_pParent->getCharacterHeight();
+
+	m_fnParent.GetDirection(fDir, uDir);
+
+	m_fnCamera.SetPosition(pos);
+	m_fnCamera.SetDirection(fDir, uDir);
+}
+/*
 Camera::Camera(void) {
 }
 Camera::~Camera(void) {
@@ -227,3 +322,22 @@ void moveCamera(int action, OBJECTid tID, OBJECTid cID, OBJECTid dummyID, OBJECT
 		camera.SetDirection(fDir, NULL);
 	}
 }
+
+/*
+		!Camera(void);
+
+		void GameAIupdate(int skip);
+
+		OBJECTid getCameraId(){
+			return camera_id;
+		}
+
+		OBJECTid getCameraBaseId(){
+			return camera_base_id;
+		}
+
+	private:
+		SCENEid scene_id;
+		OBJECTid camera_id, camera_base_id;
+}
+*/

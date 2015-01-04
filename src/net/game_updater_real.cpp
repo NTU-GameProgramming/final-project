@@ -7,7 +7,7 @@ GmUpdaterReal::GmUpdaterReal () : GmUpdater() {
 GmUpdaterReal::~GmUpdaterReal() {
 };
 
-void GmUpdaterReal::initialize(map<CHARACTERid, MotionState> *char2ms, map<CHARACTERid, Character*> *char2char) {
+void GmUpdaterReal::initialize(map<CHARACTERid, int> *char2ms, map<CHARACTERid, Character*> *char2char) {
 	this->char2ms = char2ms;
 	this->char2char = char2char;
 	this->if_initialized = true;
@@ -133,14 +133,14 @@ void GmUpdaterReal::updateCharacterAttackPull(int game_id, float damage){
 };
 
 
-void GmUpdaterReal::updateCharacterMotionStatePush(CHARACTERid id, MotionState ms){
+void GmUpdaterReal::updateCharacterMotionStatePush(CHARACTERid id, int ms){
 	Json::Value data;
 	data["GAME_ID"] = this->char2game[id];
 	data["MOTION_STATE"] = static_cast<int>(ms);
 	this->update(EVENT::UPDATE_MOTION_STATE, data);
 };
 
-void GmUpdaterReal::updateCharacterMotionStatePull(int game_id, MotionState ms){
+void GmUpdaterReal::updateCharacterMotionStatePull(int game_id, int ms){
 	(*this->char2ms)[this->game2char[game_id]] = ms;
 };
 
