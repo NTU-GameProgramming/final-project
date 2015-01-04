@@ -43,6 +43,8 @@ int stateMenu = 0;
 
 int frame = 0;
 
+int wndWidth = 1024;
+int wndHeight = 768;
 int window_w = 1024;
 int window_h = 768;
 int viewPortWidth = 1024;
@@ -250,6 +252,8 @@ void RenderIt(int skip){
 	float pos[3], fDir[3], uDir[3];
 
 	FnViewport vp;
+
+	mouseInput.update();
 
 	//render the whole scene
 	vp.ID(viewportID);

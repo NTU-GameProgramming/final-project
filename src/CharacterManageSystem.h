@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Character.h"
-#include "basic.h"
+//#include "basic.h"
 #include <string>
 #include "FightSystem.h"
 #include "Mouse.h"
