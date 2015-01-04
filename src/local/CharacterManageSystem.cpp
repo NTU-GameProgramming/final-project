@@ -27,6 +27,8 @@ bool CharacterManageSystem::addCharacter(Character &character, bool isLocalPlaye
 		//m_FightSystem.initialize(this,&m_mapCharacterId2Character);
 		character.displayMesh(false);
 	}
+
+	cout << "size of characters" << m_mapCharacterId2Character.size() << endl;
 	return false;
 }
 
@@ -163,8 +165,7 @@ void CharacterManageSystem::gotAttacked(CHARACTERid characterId, float damage)
 
 }
 
-void CharacterManageSystem::changActorByTAB()
-{
+void CharacterManageSystem::changActorByTAB() {
 	m_mapCharacterId2Character[m_localPlayerId]->displayMesh(true);
 	std::map<CHARACTERid, Character*>::iterator chrIter = m_mapCharacterId2Character.begin();
 	for(; chrIter != m_mapCharacterId2Character.end(); ++chrIter){

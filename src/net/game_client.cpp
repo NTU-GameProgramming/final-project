@@ -70,6 +70,7 @@ void GmClient::callback(Json::Value &json) {
 				actor.pos[0] = data["POS"][0].asFloat(); actor.pos[1]=data["POS"][1].asFloat();actor.pos[2]=data["POS"][2].asFloat();
 				actor.fdir[0] = data["FDIR"][0].asFloat(); actor.fdir[1] = data["FDIR"][1].asFloat(); actor.fdir[2] = data["FDIR"][2].asFloat();
 				actor.udir[0] = data["UDIR"][0].asFloat(); actor.udir[1] = data["UDIR"][1].asFloat(); actor.udir[2] = data["UDIR"][2].asFloat();
+				actor.mesh = data["MESH"].asString();
 				actor.is_main_actor = (this->game_id == game_id);
 
 			} else if(json[1] == "ADD_OBJECT"){
@@ -80,7 +81,7 @@ void GmClient::callback(Json::Value &json) {
 			}
 		}
 	} else if(this->status == CONNECTED) {
-		cout << "CONNECTED CUBE" << endl;
+		//cout << "CONNECTED CUBE" << endl;
 		if(json[0] == "GAME") {
 			if(json[1] == "SYNC_ACK") {
 				cout << "Got SYNC_ACK" << endl;
@@ -115,12 +116,16 @@ void GmClient::callback(Json::Value &json) {
 			} else if(json[1] == "UPDATE_MOTION_STATE") {
 				Json::Value data = json[2];
 				int game_id = data["GAME_ID"].asInt();
-				this->game_updater->updateCharacterMotionStatePull(game_id, static_cast<MotionState>(data["MOTION_STATE"].asInt()));
+				this->game_updater->updateCharacterMotionStatePull(game_id, data["MOTION_STATE"].asInt());
 			} else if(json[1] == "UPDATE_ATTACK") {
 				Json::Value data = json[2];
 				int game_id = data["GAME_ID"].asInt();
-				cout << "UPDATE_ATTACK!!!!!  " << data["DAMAGE"].asInt() << endl;
-				this->game_updater->updateCharacterAttackPull(game_id, data["DAMAGE"].asInt());
+				cout << "UPDATE_ATTACK!!!!!  " << data["BLOOD"].asInt() << endl;
+				this->game_updater->updateCharacterAttackPull(game_id, data["BLOOD"].asInt());
+			} else if(json[1] == "ROUNDOVER") {
+				Json::Value data = json[2];
+				int winner_game_id = data["WINNER_GAME_ID"].asInt();
+				cout << "Roundover: winner is " << winner_game_id << endl;
 			}
 		}
 	}

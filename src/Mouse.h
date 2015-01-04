@@ -6,6 +6,9 @@ public:
 	Mouse();
 	~Mouse();
 
+	void hideMouse(){ShowCursor(FALSE);};
+	void showMouse(){ShowCursor(TRUE);};
+
 	void update(){
 		POINT pt;
 		GetCursorPos(&pt);

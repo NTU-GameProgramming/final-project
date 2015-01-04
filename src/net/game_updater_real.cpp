@@ -123,10 +123,10 @@ void GmUpdaterReal::updateCharacterAttackPush(CHARACTERid id){
 	this->update(UPDATE_ATTACK, data);
 };
 
-void GmUpdaterReal::updateCharacterAttackPull(int game_id, float damage){
+void GmUpdaterReal::updateCharacterAttackPull(int game_id, int blood){
 	CHARACTERid id = this->game2char[game_id];
 	Character* character = (*(this->char2char))[id];
-	int blood = character->modifyChrBlood(-1 * damage);
+	character->modifyChrBlood(-(blood - character->readChrBlood()));
 	if (blood) {
 		(*(this->char2ms))[id] = DAMAGED;
 	}
@@ -136,11 +136,12 @@ void GmUpdaterReal::updateCharacterAttackPull(int game_id, float damage){
 void GmUpdaterReal::updateCharacterMotionStatePush(CHARACTERid id, int ms){
 	Json::Value data;
 	data["GAME_ID"] = this->char2game[id];
-	data["MOTION_STATE"] = static_cast<int>(ms);
+	data["MOTION_STATE"] = ms;
 	this->update(EVENT::UPDATE_MOTION_STATE, data);
 };
 
 void GmUpdaterReal::updateCharacterMotionStatePull(int game_id, int ms){
+	cout << "update motionstate : " << game_id << "/" << this->game2char[game_id] << " = " << ms << endl;
 	(*this->char2ms)[this->game2char[game_id]] = ms;
 };
 

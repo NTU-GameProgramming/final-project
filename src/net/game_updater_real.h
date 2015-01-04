@@ -34,7 +34,7 @@ public:
 	void updateObjectPull(int game_id);
 
 	void updateCharacterAttackPush(CHARACTERid id);
-	void updateCharacterAttackPull(int game_id, float damage);
+	void updateCharacterAttackPull(int game_id, int blood);
 	
 	void updateCharacterMotionStatePush(CHARACTERid id, int ms);
 	void updateCharacterMotionStatePull(int game_id, int ms);

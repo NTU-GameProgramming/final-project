@@ -186,26 +186,26 @@ void FyMain(int argc, char **argv)
 	uDir[0] = 0, uDir[1] = 0, uDir[2] = 1;
 
 
-	Character actor, ememy;
 	map<int, GmCharacter*> charNode = game_client.getGmTree().getCharacterNode();
 	cout << "Number of Character: " << charNode.size() << endl;
+	map<int, Character *> actors;
     for (map<int, GmCharacter*>::iterator it = charNode.begin(); it != charNode.end(); it++) {
-		cout << it->second->game_id << ", is_main_character?" << it->second->is_main_actor << endl;
+		actors[it->first] = new Character();
 		if(it->second->is_main_actor) {
-			cout << "main character" << endl;
-			actor.setMeshFileName("Lyubu2");
-			actor.setCharacterName("Lyubu2");
-			actor.initialize(sceneID, NULL, terrainRoomID, it->second->fdir,  it->second->udir,  it->second->pos);
-			actorID = actor.getCharacterId();
-			chrMgtSystem.addCharacter(actor, true);
-			game_updater.registerCharacter(it->second->game_id, actor.getCharacterId());
+			cout << "Local character:" << it->second->game_id << "/" << it->second->id << endl;
+			actors[it->first]->setMeshFileName("Lyubu2");
+			actors[it->first]->setCharacterName("Lyubu2");
+			actors[it->first]->initialize(sceneID, NULL, terrainRoomID, it->second->fdir,  it->second->udir,  it->second->pos);
+			actorID = actors[it->first]->getCharacterId();
+			chrMgtSystem.addCharacter(*(actors[it->first]), true);
+			game_updater.registerCharacter(it->second->game_id, actors[it->first]->getCharacterId());
 		} else {
-			cout << "Not main character" << endl;
-			ememy.setMeshFileName("Donzo2");
-			ememy.setCharacterName("Donzo2");
-			ememy.initialize(sceneID, NULL, terrainRoomID, it->second->fdir,  it->second->udir,  it->second->pos);
-			chrMgtSystem.addCharacter(ememy, false);
-			game_updater.registerCharacter(it->second->game_id, ememy.getCharacterId());
+			cout << "Non-local character:" << it->second->game_id << "/" << it->second->id << endl;
+			actors[it->first]->setMeshFileName("Donzo2");
+			actors[it->first]->setCharacterName("Donzo2");
+			actors[it->first]->initialize(sceneID, NULL, terrainRoomID, it->second->fdir,  it->second->udir,  it->second->pos);
+			chrMgtSystem.addCharacter(*(actors[it->first]), false);
+			game_updater.registerCharacter(it->second->game_id, actors[it->first]->getCharacterId());
 		}
     }
 
@@ -280,8 +280,7 @@ void FyMain(int argc, char **argv)
  --------------------------------------------------------------*/
 void GameAI(int skip)
 {
-	if (!stateMenu)
-	{
+	if (!stateMenu)	{
 		chrMgtSystem.update(skip); //人物狀態的更新
 		actorID = chrMgtSystem.getActorID();
 		//Camera狀態的更新
@@ -295,7 +294,7 @@ void RenderIt(int skip){
 
 	FnViewport vp;
 
-	mouseInput.update();
+	if(!stateMenu) {mouseInput.update();}
 
 	//render the whole scene
 	vp.ID(viewportID);
@@ -508,12 +507,14 @@ void ZoomCam(int x, int y)
    }
 }
 
-void showMenu(BYTE code, BOOL4 value)
-{
-	if (value)
-	{
+void showMenu(BYTE code, BOOL4 value) {
+	if (value) {
 		stateMenu = stateMenu ? 0 : 1;
-
+		if(stateMenu) {
+			mouseInput.showMouse();
+		} else {
+			mouseInput.hideMouse();
+		}
 	}
 }
 
