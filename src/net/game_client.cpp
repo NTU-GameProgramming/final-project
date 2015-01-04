@@ -71,6 +71,7 @@ void GmClient::callback(Json::Value &json) {
 				actor.fdir[0] = data["FDIR"][0].asFloat(); actor.fdir[1] = data["FDIR"][1].asFloat(); actor.fdir[2] = data["FDIR"][2].asFloat();
 				actor.udir[0] = data["UDIR"][0].asFloat(); actor.udir[1] = data["UDIR"][1].asFloat(); actor.udir[2] = data["UDIR"][2].asFloat();
 				actor.mesh = data["MESH"].asString();
+				actor.is_ai = data["IS_AI"].asBool();
 				actor.is_main_actor = (this->game_id == game_id);
 
 			} else if(json[1] == "ADD_OBJECT"){

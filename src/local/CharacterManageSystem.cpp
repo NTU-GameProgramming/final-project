@@ -4,11 +4,23 @@
 CharacterManageSystem::CharacterManageSystem(GmUpdaterReal *game_updater) :m_localPlayerId(NULL) {
 	this->game_updater = game_updater;
 	game_updater->initialize(&(this->m_mapCharacterId2NewState), &(this->m_mapCharacterId2Character));
-}
+	this->ai = NULL;
+};
 
 
 CharacterManageSystem::~CharacterManageSystem(void) {
-}
+	if(this->ai != NULL)
+		delete this->ai;
+};
+
+void CharacterManageSystem::becomeAIMaster() {
+	this->ai = new AI(&(this->m_mapCharacterId2NewState), game_updater);
+	for(std::map<CHARACTERid, Character*>::iterator it = this->m_mapCharacterId2Character.begin(); it != this->m_mapCharacterId2Character.end(); it++) {
+		if(it->second->isAI()) {
+			this->ai->registerDoll(it->second);
+		}
+	}
+};
 
 bool CharacterManageSystem::addCharacter(Character &character, bool isLocalPlayer){
 	CHARACTERid  characterId = character.getCharacterId();
@@ -28,7 +40,7 @@ bool CharacterManageSystem::addCharacter(Character &character, bool isLocalPlaye
 		character.displayMesh(false);
 	}
 
-	cout << "size of characters" << m_mapCharacterId2Character.size() << endl;
+	//cout << "size of characters" << m_mapCharacterId2Character.size() << endl;
 	return false;
 }
 
@@ -102,14 +114,15 @@ void CharacterManageSystem::updateCharacterInputs(){
 
 void CharacterManageSystem::update(int skip){
 
+	if(ai != NULL) 
+		ai->update();
 	// Need to modified to update EVERY character
 
 	updateCharacterInputs();
 
 	//update character's animation and motion
 	{
-		std::map<CHARACTERid, Character*>::iterator chrIter = m_mapCharacterId2Character.begin();
-		for(; chrIter != m_mapCharacterId2Character.end(); ++chrIter){
+		for(std::map<CHARACTERid, Character*>::iterator chrIter = m_mapCharacterId2Character.begin(); chrIter != m_mapCharacterId2Character.end(); ++chrIter){
 			(chrIter->second)->update(skip, m_mapCharacterId2NewState[(chrIter->first)]);
 		}
 	}
@@ -129,8 +142,7 @@ void CharacterManageSystem::update(int skip){
 
 	//update date character's COOL_DOWN
 	{
-		std::map<CHARACTERid, Character*>::iterator chrIter = m_mapCharacterId2Character.begin();
-		for(; chrIter != m_mapCharacterId2Character.end(); ++chrIter){
+		for(std::map<CHARACTERid, Character*>::iterator chrIter = m_mapCharacterId2Character.begin(); chrIter != m_mapCharacterId2Character.end(); ++chrIter){
 			if ((chrIter->second)->getCurrentState() == MotionState(COOL_DOWN)) //state changes from character
 			{
 				m_mapCharacterId2NewState[(chrIter->first)] = MotionState(COOL_DOWN);

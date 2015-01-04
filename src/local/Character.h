@@ -155,6 +155,7 @@ public:
 		m_chrBlood.modifyBlood(bloodDiff);
 		if (m_chrBlood.getBlood() <= 0){
 			m_curState = MotionState::DEAD;
+
 		}
 
 		return m_chrBlood.getBlood();
@@ -188,6 +189,14 @@ public:
 
 	float getCharacterHeight(){
 		return actorHeight;
+	}
+
+	void setIsAI(bool is_ai) {
+		this->is_ai = is_ai;
+	}
+
+	bool isAI() {
+		return this->is_ai;
 	}
 
 	Character& operator=(const Character &other){
@@ -269,4 +278,5 @@ private:
 	std::map<ACTIONid, ActionType> m_mapActionId2ActionType;
 	//character info
 	float 	actorHeight;
+	bool is_ai;
 };

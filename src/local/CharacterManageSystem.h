@@ -5,6 +5,7 @@
 #include "Character.h"
 #include "Mouse.h"
 #include "net/game_updater_real.h"
+#include "local/ai.h"
 
 extern Mouse mouseInput;
 extern int wndWidth, wndHeight;
@@ -16,6 +17,8 @@ public:
 	~CharacterManageSystem(void);
 
 	void update(int skip);
+
+	void becomeAIMaster();
 
 	bool addCharacter(Character &character, bool isLocalPlayer = false);
 	void removeCharacter(CHARACTERid characterId);
@@ -38,5 +41,6 @@ private:
 	std::map<std::string, CHARACTERid> m_mapStrName2CharacterId; 
 	CHARACTERid m_localPlayerId;
 	GmUpdaterReal *game_updater;
+	AI *ai;
 };
 

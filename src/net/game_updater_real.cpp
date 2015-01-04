@@ -127,8 +127,10 @@ void GmUpdaterReal::updateCharacterAttackPull(int game_id, int blood){
 	CHARACTERid id = this->game2char[game_id];
 	Character* character = (*(this->char2char))[id];
 	character->modifyChrBlood(-(blood - character->readChrBlood()));
-	if (blood) {
+	if (blood > 0) {
 		(*(this->char2ms))[id] = DAMAGED;
+	} else {
+		(*(this->char2ms))[id] = DEAD;
 	}
 };
 

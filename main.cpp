@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <ctime>
 #include <FlyWin32.h>
 #include "local/Character.h"
 #include "local/CharacterManageSystem.h"
@@ -8,7 +9,8 @@
 #include "net/game_updater_real.h"
 #include "Mouse.h"
 
-#define GAME_PROGRAMMING_DEFAULT_IP "140.112.67.117"
+//#define GAME_PROGRAMMING_DEFAULT_IP "140.112.67.117"
+#define GAME_PROGRAMMING_DEFAULT_IP "127.0.0.1"
 #define GAME_PROGRAMMING_DEFAULT_PORT "8976"
 
 GmClient game_client;
@@ -87,9 +89,10 @@ void setCamera();
 void showMenu(BYTE code, BOOL4 value);
 void updateMousePos(int, int);
 
-void FyMain(int argc, char **argv)
-{
+void FyMain(int argc, char **argv) {
 	
+	srand(time(NULL));
+
 	AllocConsole(); 
 	freopen("CONIN$", "r", stdin);
 	freopen("CONOUT$", "w", stdout);
@@ -189,25 +192,24 @@ void FyMain(int argc, char **argv)
 	map<int, GmCharacter*> charNode = game_client.getGmTree().getCharacterNode();
 	cout << "Number of Character: " << charNode.size() << endl;
 	map<int, Character *> actors;
+
+
     for (map<int, GmCharacter*>::iterator it = charNode.begin(); it != charNode.end(); it++) {
 		actors[it->first] = new Character();
-		if(it->second->is_main_actor) {
-			cout << "Local character:" << it->second->game_id << "/" << it->second->id << endl;
-			actors[it->first]->setMeshFileName("Lyubu2");
-			actors[it->first]->setCharacterName("Lyubu2");
-			actors[it->first]->initialize(sceneID, NULL, terrainRoomID, it->second->fdir,  it->second->udir,  it->second->pos);
-			actorID = actors[it->first]->getCharacterId();
-			chrMgtSystem.addCharacter(*(actors[it->first]), true);
-			game_updater.registerCharacter(it->second->game_id, actors[it->first]->getCharacterId());
-		} else {
-			cout << "Non-local character:" << it->second->game_id << "/" << it->second->id << endl;
-			actors[it->first]->setMeshFileName("Donzo2");
-			actors[it->first]->setCharacterName("Donzo2");
-			actors[it->first]->initialize(sceneID, NULL, terrainRoomID, it->second->fdir,  it->second->udir,  it->second->pos);
-			chrMgtSystem.addCharacter(*(actors[it->first]), false);
-			game_updater.registerCharacter(it->second->game_id, actors[it->first]->getCharacterId());
-		}
+		cout << "Local character:" << it->second->game_id << "/" << it->second->id << endl;
+		actors[it->first]->setMeshFileName(it->second->mesh);
+		actors[it->first]->setCharacterName(it->second->mesh);
+		actors[it->first]->initialize(sceneID, NULL, terrainRoomID, it->second->fdir,  it->second->udir,  it->second->pos);
+		actors[it->first]->setIsAI(it->second->is_ai);
+		//actorID = actors[it->first]->getCharacterId();
+		chrMgtSystem.addCharacter(*(actors[it->first]), it->second->is_main_actor);
+		game_updater.registerCharacter(it->second->game_id, actors[it->first]->getCharacterId());
     }
+
+	if(game_client.getClientId() == 0) { // AI Master!!!
+		cout << "I am AI Master !!!" << endl;
+		chrMgtSystem.becomeAIMaster();
+	}
 
 	cameraID = scene.CreateObject(CAMERA);
 	FnCamera camera;

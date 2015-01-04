@@ -22,6 +22,7 @@ struct GmCharacter {
 	float fdir[3];
 	float udir[3];
 	bool is_main_actor;
+	bool is_ai;
 	string mesh;
 };
 
