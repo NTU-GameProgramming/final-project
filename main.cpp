@@ -5,6 +5,7 @@
 #include "local/Character.h"
 #include "local/CharacterManageSystem.h"
 #include "local/Camera.h"
+#include "net/game_timer.h"
 #include "net/game_client.h"
 #include "net/game_updater_real.h"
 #include "Mouse.h"
@@ -15,6 +16,7 @@
 
 GmClient game_client;
 GmUpdaterReal game_updater;
+GmTimer game_timer;
 
 
 
@@ -108,7 +110,7 @@ void FyMain(int argc, char **argv) {
 	game_client.initialize(ip, port, &game_updater);
 	game_client.connectServer();
 	cout << "Server connected." << endl;
-
+	game_timer.initialize(&game_updater, game_client.getGmTree().getTotalGameTime());
 	std::cout<<"Start Game" << std::endl;
 	//create a new window
 	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, window_w, window_h, FALSE);
@@ -142,7 +144,7 @@ void FyMain(int argc, char **argv) {
     spID0 = scene2D.CreateObject(SPRITE);
     sp.Object(spID0);
 	sp.SetSize(sight_w, sight_h);
-    sp.SetImage("spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+    sp.SetImage("C:\\Fly2Data\\Image\\spiner", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
 	sp.SetPosition(window_w/2-sight_w/2, window_h/2-sight_h/2, 0);
 
 	FnScene scene2Dmenu;
@@ -154,13 +156,13 @@ void FyMain(int argc, char **argv) {
     OBJECTid spIDexit = scene2Dmenu.CreateObject(SPRITE);
     spExit.Object(spIDexit);
 	spExit.SetSize(400, 70);
-    spExit.SetImage("exit_button", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
+    spExit.SetImage("C:\\Fly2Data\\Image\\exit_button", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
 	spExit.SetPosition(window_w/2-400/2, window_h/2-70/2, 0);
 	/*
 	FnSprite sp1;
     spID1 = scene2Dmenu.CreateObject(SPRITE);
     sp1.Object(spID1);
-	sp1.SetSize(mouse_w, mouse_h);
+	sp1.SetSize(C:\\Fly2Data\\Image\\mouse_w, mouse_h);
     sp1.SetImage("mouse", 0, NULL, FALSE, NULL, 2, TRUE, FILTER_LINEAR);
 	sp1.SetPosition(window_w/2-mouse_w/2, window_h/2-mouse_h/2, 0);
 	*/
@@ -284,6 +286,7 @@ void GameAI(int skip)
 		actorID = chrMgtSystem.getActorID();
 		//Cameraª¬ºAªº§ó·s
 		camera.update(skip);
+		game_timer.update();
 		game_client.update();
 	}
 }
@@ -320,11 +323,12 @@ void RenderIt(int skip){
 		frame = 0;
 	}
 
-	FnText text,charactorInfo,char_HP,info;
+	FnText text, charactorInfo,char_HP,info;
 	text.ID(textID);
 	charactorInfo.ID(textCharID);
 	char_HP.ID(textHP_vID);
 	info.ID(textInfo_vID);
+
 
 	text.Begin(viewportID);
 	charactorInfo.Begin(viewportID);
@@ -368,11 +372,11 @@ void RenderIt(int skip){
 
    text.End();
 
-   	sprintf_s(posS, "HEALTH", chrMgtSystem.getCharacterblood(actorID));
+   	sprintf_s(posS, "HEALTH");
 	charactorInfo.Write(posS, 50, 700, 255, 255, 100);
-	sprintf_s(posS, "ROUND", chrMgtSystem.getCharacterblood(actorID));
+	sprintf_s(posS, "ROUND");
 	charactorInfo.Write(posS, 400, 700, 255, 255, 100);
-	sprintf_s(posS, "TIME", chrMgtSystem.getCharacterblood(actorID));
+	sprintf_s(posS, "TIME");
 	charactorInfo.Write(posS, 515, 700, 255, 255, 100);
 	charactorInfo.End();
 
@@ -380,9 +384,10 @@ void RenderIt(int skip){
 	char_HP.Write(posS, 110, 672, 255, 255, 255);
 	sprintf_s(posS, "%d", chrMgtSystem.getCharacterblood(actorID));
 	info.Write(posS, 460, 694 ,255, 255, 255);
-	sprintf_s(posS, "%d", chrMgtSystem.getCharacterblood(actorID));
+	sprintf_s(posS, "%d", game_timer.getTimeLeft());
 	info.Write(posS, 560, 694, 255, 255, 255);
 	info.End();
+
    FySwapBuffers();
 }
 

@@ -147,3 +147,10 @@ void GmUpdaterReal::updateCharacterMotionStatePull(int game_id, int ms){
 	(*this->char2ms)[this->game2char[game_id]] = ms;
 };
 
+void GmUpdaterReal::gameOverPush(){
+
+};
+
+void GmUpdaterReal::gameOverPull(){
+
+};

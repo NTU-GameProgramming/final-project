@@ -46,7 +46,16 @@ public:
 		return this->characters;
 	};
 
+	int getTotalGameTime() {
+		return this->total_game_time;
+	}
+
+	int setTotalGameTime(int total_game_time) {
+		this->total_game_time = total_game_time;
+	}
+
 private:
 	map<int, GmObject*> objects;
 	map<int, GmCharacter*> characters;
+	int total_game_time;
 };
