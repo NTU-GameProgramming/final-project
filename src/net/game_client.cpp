@@ -59,11 +59,7 @@ void GmClient::callback(Json::Value &json) {
 
 			} else if(json[1] == "READY") {
 				this->status = CONNECTED;
-				this->game_tree.setTotalGameTime(json[2]["TIME"].asInt());
-				this->game_tree.setTotalGameRounds(json[2]["ROUNDS"].asInt());
-				cout << "##### READY #####"  << endl;
-				cout << "Time(s): " << this->game_tree.getTotalGameTime() << endl;
-				cout << "Rounds : " << this->game_tree.getTotalGameRounds() << endl;
+				cout << "READY!!!!" << endl;
 			} else if(json[1] == "ADD_CHARACTER"){
 				cout << "Add Character!!" << endl;
 				// 得到Gm_id, 新增一個Character
@@ -74,8 +70,6 @@ void GmClient::callback(Json::Value &json) {
 				actor.pos[0] = data["POS"][0].asFloat(); actor.pos[1]=data["POS"][1].asFloat();actor.pos[2]=data["POS"][2].asFloat();
 				actor.fdir[0] = data["FDIR"][0].asFloat(); actor.fdir[1] = data["FDIR"][1].asFloat(); actor.fdir[2] = data["FDIR"][2].asFloat();
 				actor.udir[0] = data["UDIR"][0].asFloat(); actor.udir[1] = data["UDIR"][1].asFloat(); actor.udir[2] = data["UDIR"][2].asFloat();
-				actor.mesh = data["MESH"].asString();
-				actor.is_ai = data["IS_AI"].asBool();
 				actor.is_main_actor = (this->game_id == game_id);
 
 			} else if(json[1] == "ADD_OBJECT"){
@@ -86,7 +80,7 @@ void GmClient::callback(Json::Value &json) {
 			}
 		}
 	} else if(this->status == CONNECTED) {
-		//cout << "CONNECTED CUBE" << endl;
+		cout << "CONNECTED CUBE" << endl;
 		if(json[0] == "GAME") {
 			if(json[1] == "SYNC_ACK") {
 				cout << "Got SYNC_ACK" << endl;
@@ -121,17 +115,12 @@ void GmClient::callback(Json::Value &json) {
 			} else if(json[1] == "UPDATE_MOTION_STATE") {
 				Json::Value data = json[2];
 				int game_id = data["GAME_ID"].asInt();
-				this->game_updater->updateCharacterMotionStatePull(game_id, data["MOTION_STATE"].asInt());
+				this->game_updater->updateCharacterMotionStatePull(game_id, static_cast<MotionState>(data["MOTION_STATE"].asInt()));
 			} else if(json[1] == "UPDATE_ATTACK") {
 				Json::Value data = json[2];
 				int game_id = data["GAME_ID"].asInt();
-				cout << "UPDATE_ATTACK!!!!!  " << data["BLOOD"].asInt() << endl;
-				this->game_updater->updateCharacterAttackPull(game_id, data["BLOOD"].asInt());
-			} else if(json[1] == "ROUNDOVER") {
-				Json::Value data = json[2];
-				int winner_game_id = data["WINNER_GAME_ID"].asInt();
-				cout << "Roundover: winner is " << winner_game_id << endl;
-
+				cout << "UPDATE_ATTACK!!!!!  " << data["DAMAGE"].asInt() << endl;
+				this->game_updater->updateCharacterAttackPull(game_id, data["DAMAGE"].asInt());
 			}
 		}
 	}
@@ -149,3 +138,57 @@ void GmClient::sync() {
 	sync_cube[1] = "SYNC";
 	(this->json_socket)->sendJsonMessage(sync_cube);
 }
+
+/*
+
+void GmClient::registerScene(SCENEid id) {
+	(this->scene_info).id = id;
+};
+
+void GmClient::registerObject(OBJECTid id) {
+	(this->obj_infos)[id].id = id;
+};
+
+void GmClient::registerCharacter(CHARACTERid id, DataStrength s) {
+	FnCharacter actor;
+	Json::Value reg_cube, data;
+
+	reg_cube["TYPE"] = "GAME";
+	reg_cube["EVENT"] = "REG_CHARACTER";
+
+	data["ID"] = id;
+	reg_cube["DATA"] = data;
+
+	(this->json_socket)->sendJsonMessage(reg_cube);
+};
+
+void GmClient::objectPosition(OBJECTid id, float *pos) {
+	struct GmObjectInfo *GOI;
+	// !test if exists
+	GOI = &((this->obj_infos)[id]);
+	FnObject obj;
+	obj.ID(id);
+
+	if(pos == NULL) { // getter
+		obj.GetPosition(GOI->pos);
+	} else { // setter
+		memcpy (GOI->pos, pos, sizeof(float[3]));
+		obj.SetPosition(pos);
+	}
+};
+
+void GmClient::characterPosition(CHARACTERid id, float *pos) {
+	struct GmCharacterInfo *GCI;
+	// !test if exists
+	GCI = &((this->character_infos)[id]);
+	FnObject actor;
+	actor.ID(id);
+
+	if(pos == NULL) { // getter
+		actor.GetPosition(GCI->pos);
+	} else { // setter
+		memcpy (GCI->pos, pos, sizeof(float[3]));
+		actor.SetPosition(pos);
+	}
+};
+*/

@@ -41,8 +41,6 @@ public:
 	void objectPosition(OBJECTid, float *pos = NULL);
 	void characterPosition(CHARACTERid, float *pos = NULL);
 
-	int getClientId() { return this->client_id; }
-
 private:
 	JsonSocket *json_socket;
 	GmUpdater *game_updater;

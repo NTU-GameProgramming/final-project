@@ -11,7 +11,8 @@ m_isOnCameraFocus(false),
 m_rotateVel(0.02),
 m_moveVel(0.1),
 actorHeight(160),
-m_mouseSensy(0.07)
+m_mouseSensy(0.07),
+m_attackCoolDownCnt(20)
 {
 	m_meshFileName = "Lyubu2";
 	this->setCharacterBlood(100, 100);
@@ -69,9 +70,9 @@ void Character::initialize(const SCENEid &sceneId,
 	}
 
 	m_actor.SetDirection(m_fDir3, m_uDir3);
-	m_actor.SetTerrainRoom(terrianRoomId, 400.f);
+	m_actor.SetTerrainRoom(terrianRoomId, 500.f);
 
-	m_actor.PutOnTerrain(m_fPos3, 200);
+	m_actor.PutOnTerrain(m_fPos3, 300);
 	m_actor.SetPosition(m_fPos3);
 
 	//set up audio
@@ -83,17 +84,20 @@ void Character::initialize(const SCENEid &sceneId,
 		m_mapAudioIndex2FileName.insert(std::pair<int, std::string>(2, "male_die_a"));
 		m_mapAudioIndex2FileName.insert(std::pair<int, std::string>(3, "male_damaged_a"));
 		m_mapAudioIndex2FileName.insert(std::pair<int, std::string>(4, "male_attack_a"));
+		m_mapAudioIndex2FileName.insert(std::pair<int, std::string>(5, "male_heavy_attack_a"));
 	
 		m_mapAudioIndex2PlayMode.insert(std::pair<int, int>(1, LOOP));
 		m_mapAudioIndex2PlayMode.insert(std::pair<int, int>(2, ONCE));
 		m_mapAudioIndex2PlayMode.insert(std::pair<int, int>(3, ONCE));
 		m_mapAudioIndex2PlayMode.insert(std::pair<int, int>(4, ONCE));
+		m_mapAudioIndex2PlayMode.insert(std::pair<int, int>(5, ONCE));
 
 		m_mapActionType2AudioIndex.insert(std::pair<ActionType, int>(ACTION_IDLE, 0));
 		m_mapActionType2AudioIndex.insert(std::pair<ActionType, int>(ACTION_RUN, 1));
 		m_mapActionType2AudioIndex.insert(std::pair<ActionType, int>(ACTION_DIE, 2));
 		m_mapActionType2AudioIndex.insert(std::pair<ActionType, int>(ACTION_DAMAGED, 3));
 		m_mapActionType2AudioIndex.insert(std::pair<ActionType, int>(ACTION_ATTACK, 4));
+		m_mapActionType2AudioIndex.insert(std::pair<ActionType, int>(ACTION_HEAVY_ATTACK, 5));
 		
 
 		m_curAudioIndex = NULL;
@@ -107,6 +111,7 @@ void Character::initialize(const SCENEid &sceneId,
 		ACTIONid dieId;
 		ACTIONid damagedId;
 		ACTIONid attackId;
+		ACTIONid heavyAttackId;
 		if (!m_meshFileName.compare("Lyubu2")){
 			idleId = m_actor.GetBodyAction(NULL, "Idle");
 			runId = m_actor.GetBodyAction(NULL, "Run");
@@ -114,7 +119,7 @@ void Character::initialize(const SCENEid &sceneId,
 			dieId = m_actor.GetBodyAction(NULL, "Die");
 			damagedId = m_actor.GetBodyAction(NULL, "HeavyDamaged");
 			attackId = m_actor.GetBodyAction(NULL, "NormalAttack1");
-
+			heavyAttackId = m_actor.GetBodyAction(NULL, "HeavyAttack1");
 
 		}
 		else if (!m_meshFileName.compare("Donzo2")){
@@ -123,6 +128,7 @@ void Character::initialize(const SCENEid &sceneId,
 			walkId = m_actor.GetBodyAction(NULL, "Walk");
 			dieId = m_actor.GetBodyAction(NULL, "Die");
 			attackId = m_actor.GetBodyAction(NULL, "Attack1");
+			heavyAttackId = m_actor.GetBodyAction(NULL, "HeavyAttack");
 			damagedId = m_actor.GetBodyAction(NULL, "DamageL");
 		}
 		else{
@@ -133,6 +139,7 @@ void Character::initialize(const SCENEid &sceneId,
 		m_mapIndex2Action.insert(std::pair<ActionType, ACTIONid>(ACTION_WALK, walkId));
 		m_mapIndex2Action.insert(std::pair<ActionType, ACTIONid>(ACTION_DIE, dieId));
 		m_mapIndex2Action.insert(std::pair<ActionType, ACTIONid>(ACTION_ATTACK, attackId));
+		m_mapIndex2Action.insert(std::pair<ActionType, ACTIONid>(ACTION_HEAVY_ATTACK, heavyAttackId));
 		m_mapIndex2Action.insert(std::pair<ActionType, ACTIONid>(ACTION_DAMAGED, damagedId));
 
 		m_mapActionId2ActionType.insert(std::pair<ACTIONid, ActionType>(idleId, ACTION_IDLE));
@@ -140,11 +147,13 @@ void Character::initialize(const SCENEid &sceneId,
 		m_mapActionId2ActionType.insert(std::pair<ACTIONid, ActionType>(walkId, ACTION_WALK));
 		m_mapActionId2ActionType.insert(std::pair<ACTIONid, ActionType>(dieId, ACTION_DIE));
 		m_mapActionId2ActionType.insert(std::pair<ACTIONid, ActionType>(attackId, ACTION_ATTACK));
+		m_mapActionId2ActionType.insert(std::pair<ACTIONid, ActionType>(heavyAttackId, ACTION_HEAVY_ATTACK));
 		m_mapActionId2ActionType.insert(std::pair<ACTIONid, ActionType>(damagedId, ACTION_DAMAGED));
 
 		m_mapState2Action.insert(std::pair<MotionState, ACTIONid>(MotionState::IDLE, idleId));
 		m_mapState2Action.insert(std::pair<MotionState, ACTIONid>(MotionState::DEAD, dieId));
 		m_mapState2Action.insert(std::pair<MotionState, ACTIONid>(MotionState::ATTACK, attackId));
+		m_mapState2Action.insert(std::pair<MotionState, ACTIONid>(MotionState::HEAVY_ATTACK, heavyAttackId));
 		m_mapState2Action.insert(std::pair<MotionState, ACTIONid>(MotionState::DAMAGED, damagedId));
 
 		m_mapState2Action.insert(std::pair<MotionState, ACTIONid>(MotionState::MOVE_BACKWARD, runId));
@@ -173,6 +182,9 @@ void Character::initialize(const SCENEid &sceneId,
 void Character::update(int skip, int newState){
 
 	bool success = false;
+	if (m_attackCoolDownCnt > 0){
+		--m_attackCoolDownCnt;
+	}
 	if (readChrBlood() == 0){
 		newState = MotionState::DEAD;
 	}
@@ -246,6 +258,38 @@ void Character::update(int skip, int newState){
 		}
 	}
 
+	if (newState&MotionState::ATTACK){
+		if (m_attackCoolDownCnt <= 0){
+			float pos[3];
+			pos[0] = m_fPos3[0]; pos[1] = m_fPos3[1] + 20; pos[2] = m_fPos3[2] + 60;
+			MagicBall *ball = new MagicBall(m_actorId, m_sceneId, m_terrianRoomId, "shockwave",
+				cameraFDir, cameraUDir, pos);
+			objMgtSystem.addGameObject(ball);
+			vecCollisionTestList.push_back(ball);
+			m_attackCoolDownCnt = 20;
+		}
+	}
+	if (newState&MotionState::HEAVY_ATTACK){
+		if (m_attackCoolDownCnt <= 0){
+			float pos[3];
+			pos[0] = m_fPos3[0]; pos[1] = m_fPos3[1] + 20; pos[2] = m_fPos3[2] + 60;
+			MagicBall *ball = new MagicBall(m_actorId, m_sceneId, m_terrianRoomId, "PortalFX",
+				cameraFDir, cameraUDir, pos);
+			objMgtSystem.addGameObject(ball);
+			vecCollisionTestList.push_back(ball);
+
+//			HeavyAttackSpark *spell = new HeavyAttackSpark(m_actor.GetBaseObject(), m_sceneId,
+//				m_fDir3, m_uDir3, m_fPos3);
+//			objMgtSystem.addGameObject(spell);
+			m_attackCoolDownCnt = 30;
+		}
+	}
+
+	int nBoostRatio = 1;
+	if (newState&MotionState::BOOST){
+		nBoostRatio = 2;
+	}
+
 	if (newState&MotionState::IDLE){
 		//
 	}
@@ -255,19 +299,19 @@ void Character::update(int skip, int newState){
 	}
 
 	if (newState&MotionState::MOVE_FORWARD){
-		success = m_actor.MoveForward(m_moveVel, TRUE, false, FALSE, TRUE);
+		success = m_actor.MoveForward(m_moveVel*nBoostRatio, TRUE, false, FALSE, TRUE);
 	}
 
 	if (newState&MotionState::MOVE_BACKWARD){
-		success = m_actor.MoveForward(-m_moveVel, TRUE, false, FALSE, TRUE);
+		success = m_actor.MoveForward(-m_moveVel*nBoostRatio, TRUE, false, FALSE, TRUE);
 	}
 
 	if (newState&MotionState::MOVE_LEFT){
-		success = m_actor.MoveRight(-0.5*m_moveVel, TRUE, false, FALSE, TRUE);
+		success = m_actor.MoveRight(-0.5*m_moveVel*nBoostRatio, TRUE, false, FALSE, TRUE);
 	}
 
 	if (newState&MotionState::MOVE_RIGHT){
-		success = m_actor.MoveRight(0.5*m_moveVel, TRUE, false, FALSE, TRUE);
+		success = m_actor.MoveRight(0.5*m_moveVel*nBoostRatio, TRUE, false, FALSE, TRUE);
 	}
 
 	if (newState&MotionState::TURN_LEFT){
@@ -275,6 +319,9 @@ void Character::update(int skip, int newState){
 		
 		if (mouseRotate < -m_rotateVel){
 			mouseRotate = -m_rotateVel;
+		}
+		if (mouseRotate == 0){
+			mouseRotate = -2 * m_mouseSensy;
 		}
 
 		
@@ -286,6 +333,9 @@ void Character::update(int skip, int newState){
 		float mouseRotate = mouseInput.mouseVelX*m_mouseSensy;
 		if (mouseRotate > m_rotateVel){
 			mouseRotate = m_rotateVel;
+		}
+		if (mouseRotate == 0){
+			mouseRotate = 2 * m_mouseSensy;
 		}
 
 		success = m_actor.TurnRight(mouseRotate);

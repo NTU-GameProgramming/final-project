@@ -31,7 +31,7 @@ public:
 	virtual void updateObjectPull(int game_id) = 0;
 
 	virtual void updateCharacterAttackPush(CHARACTERid id) = 0;
-	virtual void updateCharacterAttackPull(int game_id, int blood) = 0;
+	virtual void updateCharacterAttackPull(int game_id, float damage) = 0;
 
 	virtual void updateCharacterMotionStatePush(CHARACTERid id, int ms) = 0;
 	virtual void updateCharacterMotionStatePull(int game_id, int ms) = 0;
@@ -39,10 +39,9 @@ public:
 	virtual
 
 	void GmUpdater::registerCharacter(int game_id, CHARACTERid actor_id) {
-		//cout << game_id << " <---> " << actor_id << endl;
+		cout << game_id << " <---> " << actor_id << endl;
 		this->char2game[actor_id] = game_id;
 		this->game2char[game_id] = actor_id;
-		cout << game_id << " <---> " << this->game2char[game_id] << "," << actor_id << endl;
 	}
 
 protected:

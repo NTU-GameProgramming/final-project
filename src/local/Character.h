@@ -8,62 +8,16 @@
 #include "enum/motion_state.h"
 #include "Mouse.h"
 #include <stdlib.h>
+#include "basic.h"
+#include "MagicBall.h"
+#include "HeavyAttackSpark.h"
+#include "CommonObjectManageSystem.h"
 
+extern CommonObjectManageSystem objMgtSystem;
 extern Mouse mouseInput;
+extern float cameraUDir[3], cameraFDir[3];
+extern std::vector<GameObject*> vecCollisionTestList;
 
-class GameObject{
-public:
-	GameObject(){};
-
-	void getLeftVertDir(float *srcFDir, float *srcUDir, float *dstDir){
-		FyCross(dstDir, srcUDir, srcFDir);
-		normalizeVector(dstDir, 3);
-	}
-
-	void getRightVertDir(float *srcFDir, float *srcUDir, float *dstDir){
-		FyCross(dstDir, srcFDir, srcUDir);
-		normalizeVector(dstDir, 3);
-	}
-
-	void normalizeVector(float *vec, int size){
-		float fSquareSum = 0;
-		for (int i = 0; i < size; ++i){
-			fSquareSum += vec[i] * vec[i];
-		}
-		fSquareSum = std::sqrt(fSquareSum);
-
-		for (int i = 0; i < size; ++i){
-			vec[i] = vec[i] / fSquareSum;
-		}
-	}
-
-	void getPositionDist2D(float *vec1, float *vec2, float &dst){
-		float fDiff[2];
-		fDiff[0] = vec1[0] - vec2[0];
-		fDiff[1] = vec1[1] - vec2[1];
-		float fSquareDst = fDiff[0] * fDiff[0] + fDiff[1] * fDiff[1];
-		dst = std::sqrt(fSquareDst);
-	}
-	void getVectorAngle(float *vec1, float *vec2, float &angle){
-		float fDotProduct = vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2];
-		float fNorm = std::sqrt(vec1[0] * vec1[0] + vec1[1] * vec1[1] + vec1[2] * vec1[2])*
-			std::sqrt(vec2[0] * vec2[0] + vec2[1] * vec2[1] + vec2[2] * vec2[2]);
-		float cosValue = fDotProduct / fNorm;
-		if (cosValue > 1){
-			cosValue = 1;
-		}
-		else if (cosValue < -1){
-			cosValue = -1;
-		}
-		angle = 180.0*std::acos(cosValue) / 3.14159265;
-
-		float fVertVector[3];
-		FyCross(fVertVector, vec1, vec2);
-		if (fVertVector[2] > 0){
-			angle = -angle;
-		}
-	}
-};
 
 class Blood{
 public:
@@ -120,6 +74,7 @@ private:
 };
 
 class Character
+	: public GameObject
 {
 public:
 	Character();
@@ -155,7 +110,6 @@ public:
 		m_chrBlood.modifyBlood(bloodDiff);
 		if (m_chrBlood.getBlood() <= 0){
 			m_curState = MotionState::DEAD;
-
 		}
 
 		return m_chrBlood.getBlood();
@@ -191,12 +145,9 @@ public:
 		return actorHeight;
 	}
 
-	void setIsAI(bool is_ai) {
-		this->is_ai = is_ai;
-	}
-
-	bool isAI() {
-		return this->is_ai;
+	GEOMETRYid getCharacterGeometryId(){
+		FnObject fnObject;
+		
 	}
 
 	Character& operator=(const Character &other){
@@ -260,6 +211,8 @@ private:
 
 	int m_coolDownCnt;
 
+	int m_attackCoolDownCnt;
+
 	//property
 	float m_fPos3[3], m_fDir3[3], m_uDir3[3];
 	float m_moveVel, m_rotateVel;
@@ -278,5 +231,4 @@ private:
 	std::map<ACTIONid, ActionType> m_mapActionId2ActionType;
 	//character info
 	float 	actorHeight;
-	bool is_ai;
 };

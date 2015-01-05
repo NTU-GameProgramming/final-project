@@ -140,7 +140,7 @@ void JsonSocket::sendJsonMessage(Json::Value &json) {
        // return 1;
     }
 
-    //printf("Bytes Sent: %ld\n", iResult);
+    printf("Bytes Sent: %ld\n", iResult);
 }
 
 string JsonSocket::formatJsonString(Json::Value &json){

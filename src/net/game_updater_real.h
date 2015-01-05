@@ -13,8 +13,7 @@ enum EVENT {
 	UPDATE_CHARACTER_DIRECTION,
 	UPDATE_OBJECT,
 	UPDATE_MOTION_STATE,
-	UPDATE_ATTACK,
-	ROUNDOVER
+	UPDATE_ATTACK
 };
 
 
@@ -35,13 +34,10 @@ public:
 	void updateObjectPull(int game_id);
 
 	void updateCharacterAttackPush(CHARACTERid id);
-	void updateCharacterAttackPull(int game_id, int blood);
+	void updateCharacterAttackPull(int game_id, float damage);
 	
 	void updateCharacterMotionStatePush(CHARACTERid id, int ms);
 	void updateCharacterMotionStatePull(int game_id, int ms);
-
-	void gameOverPush();
-	void gameOverPull();
 	
 	void update(enum EVENT, Json::Value &);
 private:
