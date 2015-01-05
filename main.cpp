@@ -53,6 +53,7 @@ AUDIOid bckMiscID, bottonMiscID;
 //global value
 
 int stateMenu = 0;
+int stateGhost = 0;
 
 int frame = 0;
 
@@ -113,7 +114,7 @@ void FyMain(int argc, char **argv) {
 	game_timer.initialize(&game_updater, game_client.getGmTree().getTotalGameTime(), game_client.getGmTree().getTotalGameRounds());
 	std::cout<<"Start Game" << std::endl;
 	//create a new window
-	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, window_w, window_h, FALSE);
+	FyStartFlyWin32("Final Project - with Fly2", 0, 0, window_w, window_h, FALSE);
 	
 	//set up path
 	FySetShaderPath("C:\\Fly2Data\\Shaders");
@@ -242,6 +243,7 @@ void FyMain(int argc, char **argv) {
 	fnAudio.Play(LOOP);
 
 	mouseInput.hideMouse();
+	stateGhost = 0; //設定鬼一開始看不到的狀態
    // set Hotkeys
    /*
    FyDefineHotKey(FY_ESCAPE, QuitGame, FALSE);  // escape for quiting the game
@@ -300,7 +302,9 @@ void RenderIt(int skip){
 
 	//render the whole scene
 	vp.ID(viewportID);
-	vp.Render3D(cameraID, TRUE, TRUE);
+	if (!stateGhost)
+		vp.Render3D(cameraID, TRUE, TRUE);
+	
 	if(stateMenu)
 		vp.RenderSprites(sID2menu, FALSE, TRUE);  // no clear the background but clear the z buffer
 	else
