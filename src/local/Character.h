@@ -199,6 +199,10 @@ public:
 		return this->is_ai;
 	}
 
+	void setPosition(float *pos) {
+		this->m_actor.SetPosition(pos);
+	}
+
 	Character& operator=(const Character &other){
 		if (this != &other){
 			this->m_sceneId = other.m_sceneId;

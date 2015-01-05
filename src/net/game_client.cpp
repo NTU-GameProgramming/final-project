@@ -8,13 +8,13 @@ GmClient::~GmClient(){
 	delete this->json_socket;
 }
 
-void GmClient::initialize(string server_ip, string server_port, GmUpdater *game_updater) {
+void GmClient::initialize(string server_ip, string server_port, GmUpdater *game_updater,  void (*main_callback)(MAIN_CALLBACK)) {
 	this->server_ip = server_ip;
 	this->server_port = server_port;
 	this->json_socket = NULL;
 	this->client_id = -1;
 	this->game_updater = game_updater;
-
+	this->main_callback = main_callback;
 	this->status = INITIALIZED;
 }
 
@@ -76,6 +76,7 @@ void GmClient::callback(Json::Value &json) {
 				actor.udir[0] = data["UDIR"][0].asFloat(); actor.udir[1] = data["UDIR"][1].asFloat(); actor.udir[2] = data["UDIR"][2].asFloat();
 				actor.mesh = data["MESH"].asString();
 				actor.is_ai = data["IS_AI"].asBool();
+				actor.is_ghost = data["IS_GHOST"].asBool();
 				actor.is_main_actor = (this->game_id == game_id);
 
 			} else if(json[1] == "ADD_OBJECT"){
@@ -127,11 +128,22 @@ void GmClient::callback(Json::Value &json) {
 				int game_id = data["GAME_ID"].asInt();
 				cout << "UPDATE_ATTACK!!!!!  " << data["BLOOD"].asInt() << endl;
 				this->game_updater->updateCharacterAttackPull(game_id, data["BLOOD"].asInt());
+			} else if(json[1] == "UPDATE_MESH") {
+				this->game_tree.getCharacterNode()[json[2]["GAME_ID"].asInt()]->mesh = json[2]["MESH"].asString();
 			} else if(json[1] == "ROUNDOVER") {
 				Json::Value data = json[2];
 				int winner_game_id = data["WINNER_GAME_ID"].asInt();
 				cout << "Roundover: winner is " << winner_game_id << endl;
-
+				(this->main_callback)(MAIN_CALLBACK::WAIT_FOR_NEW_MESH);
+			} else if(json[1] == "ROUNDOVER_TIE") {
+				(this->main_callback)(MAIN_CALLBACK::WAIT_FOR_NEW_MESH);
+			} else if(json[1] == "GAMEOVER") {
+				Json::Value data = json[2];
+				int winner_game_id = data["WINNER_GAME_ID"].asInt();
+				cout << "Roundover: winner is " << winner_game_id << endl;
+				(this->main_callback)(MAIN_CALLBACK::GAME_OVER);
+			} else if(json[1] == "NEXT_ROUND_READY"){
+				(this->main_callback)(MAIN_CALLBACK::RESTART_GAME);
 			}
 		}
 	}

@@ -6,11 +6,12 @@ GmTimer::GmTimer(){
 GmTimer::~GmTimer(){
 };
 
-void GmTimer::initialize(GmUpdaterReal *game_updater, int total_game_time, int total_game_rounds) {
+void GmTimer::initialize(bool is_master, GmUpdaterReal *game_updater, int total_game_time, int total_game_rounds) {
 	this->game_updater = game_updater;
 	this->total_game_time = total_game_time;
 	this->total_game_rounds = total_game_rounds;
 	this->resetAll();
+	this->is_master = is_master;
 }
 
 void GmTimer::resetAll() {
@@ -35,7 +36,9 @@ void GmTimer::update(){
 		if(this->diff_time >= this->total_game_time) {
 			cout << "Time UP!!!!!" << endl;
 			this->is_timer_stop = true;
-			this->game_updater->gameOverPush();
+			
+			if(this->is_master)
+				this->game_updater->gameOverPush();
 		}
 	}
 };

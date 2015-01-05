@@ -151,10 +151,8 @@ void GmUpdaterReal::updateCharacterMotionStatePull(int game_id, int ms){
 };
 
 void GmUpdaterReal::gameOverPush(){
-	Json::Value data;
+	Json::Value data = Json::objectValue;
+	cout << "ROUNDOVER sent" <<endl;
 	this->update(EVENT::ROUNDOVER, data);
 };
 
-void GmUpdaterReal::gameOverPull(){
-
-};

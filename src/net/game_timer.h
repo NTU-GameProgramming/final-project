@@ -8,7 +8,7 @@ class GmTimer {
 public:
 	GmTimer();
 	~GmTimer();
-	void initialize(GmUpdaterReal *game_updater, int total_game_time, int total_game_rounds);
+	void initialize(bool is_master, GmUpdaterReal *game_updater, int total_game_time, int total_game_rounds);
 	void resetAll();
 	void nextRound();
 	void update();
@@ -22,5 +22,5 @@ private:
 	int total_game_time, diff_time;
 	int total_game_rounds, current_round;
 	GmUpdaterReal *game_updater;
-	bool is_timer_stop;
+	bool is_master, is_timer_stop;
 };

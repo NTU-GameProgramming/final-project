@@ -24,11 +24,17 @@ enum SERVER_INFO {
 	BLOOD
 };
 
+enum class MAIN_CALLBACK {
+	RESTART_GAME,
+	GAME_OVER,
+	WAIT_FOR_NEW_MESH
+};
+
 class GmClient : public Callback {
 public:
 	GmClient();
 	~GmClient();
-	void initialize(string server_ip, string server_port, GmUpdater *game_updater);
+	void initialize(string server_ip, string server_port, GmUpdater *game_updater,  void (*main_callback)(MAIN_CALLBACK));
 	void connectServer();
 	void pushData(enum SERVER_INFO s_info, enum SERVER_ACTION s_act);
 	void disconnectServer();
@@ -51,5 +57,7 @@ private:
 	enum CONNECTION_STATUS status;
 	int client_id, game_id;
 	GmTree game_tree;
+
+	void (*main_callback)(MAIN_CALLBACK);
 };
 

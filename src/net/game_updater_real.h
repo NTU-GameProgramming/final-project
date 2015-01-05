@@ -41,7 +41,6 @@ public:
 	void updateCharacterMotionStatePull(int game_id, int ms);
 
 	void gameOverPush();
-	void gameOverPull();
 	
 	void update(enum EVENT, Json::Value &);
 private:

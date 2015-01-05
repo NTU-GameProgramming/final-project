@@ -17,7 +17,7 @@
 GmClient game_client;
 GmUpdaterReal game_updater;
 GmTimer game_timer;
-
+map<int, Character *> actors;
 
 
 VIEWPORTid viewportID;	//major viewe port
@@ -71,6 +71,10 @@ int oldX, oldY, oldXM, oldYM, oldXMM, oldYMM;
 std::map<MotionState, ACTIONid> state2ActionTable;
 //BOOL4 poseChange = FALSE;
 
+
+//game restart callback
+void GameCallback(MAIN_CALLBACK);
+
 //hotkey callback
 void QuitGame(BYTE, BOOL4);
 void Movement(BYTE, BOOL4);
@@ -107,10 +111,10 @@ void FyMain(int argc, char **argv) {
 	if(port.empty()) {port = GAME_PROGRAMMING_DEFAULT_PORT;}
 
 	cout << "Connect to server: " << ip << "/" << port << endl;
-	game_client.initialize(ip, port, &game_updater);
+	game_client.initialize(ip, port, &game_updater, &GameCallback);
 	game_client.connectServer();
 	cout << "Server connected." << endl;
-	game_timer.initialize(&game_updater, game_client.getGmTree().getTotalGameTime(), game_client.getGmTree().getTotalGameRounds());
+	game_timer.initialize(game_client.getClientId() == 0, &game_updater, game_client.getGmTree().getTotalGameTime(), game_client.getGmTree().getTotalGameRounds());
 	std::cout<<"Start Game" << std::endl;
 	//create a new window
 	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, window_w, window_h, FALSE);
@@ -193,9 +197,6 @@ void FyMain(int argc, char **argv) {
 
 	map<int, GmCharacter*> charNode = game_client.getGmTree().getCharacterNode();
 	cout << "Number of Character: " << charNode.size() << endl;
-	map<int, Character *> actors;
-
-
     for (map<int, GmCharacter*>::iterator it = charNode.begin(); it != charNode.end(); it++) {
 		actors[it->first] = new Character();
 		cout << "Local character:" << it->second->game_id << "/" << it->second->id << endl;
@@ -207,7 +208,7 @@ void FyMain(int argc, char **argv) {
 		chrMgtSystem.addCharacter(*(actors[it->first]), it->second->is_main_actor);
 		game_updater.registerCharacter(it->second->game_id, actors[it->first]->getCharacterId());
     }
-
+	cout << "Character are initiated" << endl;
 	if(game_client.getClientId() == 0) { // AI Master!!!
 		cout << "I am AI Master !!!" << endl;
 		chrMgtSystem.becomeAIMaster();
@@ -550,4 +551,18 @@ void setCamera()
 	camera.initialize(cameraID, terrainID, chrMgtSystem.getCameraActor());
 	//放好相機
 	camera.resetCamera();
+}
+
+void GameCallback(MAIN_CALLBACK code) {
+	if(code == MAIN_CALLBACK::WAIT_FOR_NEW_MESH) {
+		map<int, GmCharacter*> charNode = game_client.getGmTree().getCharacterNode();
+		cout << "Number of Character: " << charNode.size() << endl;
+	} else if(code == MAIN_CALLBACK::RESTART_GAME) {
+		map<int, GmCharacter*> charNode = game_client.getGmTree().getCharacterNode();
+		for (map<int, GmCharacter*>::iterator it = charNode.begin(); it != charNode.end(); it++) {
+			 actors[it->first]->setPosition(it->second->pos);
+		}
+		game_timer.nextRound();
+	} else if(code == MAIN_CALLBACK::GAME_OVER) {
+	}
 }
