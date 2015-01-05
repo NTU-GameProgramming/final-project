@@ -8,62 +8,14 @@
 #include "enum/motion_state.h"
 #include "Mouse.h"
 #include <stdlib.h>
+#include "basic.h"
+#include "MagicBall.h"
+#include "HeavyAttackSpark.h"
+#include "CommonObjectManageSystem.h"
 
 extern Mouse mouseInput;
-
-class GameObject{
-public:
-	GameObject(){};
-
-	void getLeftVertDir(float *srcFDir, float *srcUDir, float *dstDir){
-		FyCross(dstDir, srcUDir, srcFDir);
-		normalizeVector(dstDir, 3);
-	}
-
-	void getRightVertDir(float *srcFDir, float *srcUDir, float *dstDir){
-		FyCross(dstDir, srcFDir, srcUDir);
-		normalizeVector(dstDir, 3);
-	}
-
-	void normalizeVector(float *vec, int size){
-		float fSquareSum = 0;
-		for (int i = 0; i < size; ++i){
-			fSquareSum += vec[i] * vec[i];
-		}
-		fSquareSum = std::sqrt(fSquareSum);
-
-		for (int i = 0; i < size; ++i){
-			vec[i] = vec[i] / fSquareSum;
-		}
-	}
-
-	void getPositionDist2D(float *vec1, float *vec2, float &dst){
-		float fDiff[2];
-		fDiff[0] = vec1[0] - vec2[0];
-		fDiff[1] = vec1[1] - vec2[1];
-		float fSquareDst = fDiff[0] * fDiff[0] + fDiff[1] * fDiff[1];
-		dst = std::sqrt(fSquareDst);
-	}
-	void getVectorAngle(float *vec1, float *vec2, float &angle){
-		float fDotProduct = vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2];
-		float fNorm = std::sqrt(vec1[0] * vec1[0] + vec1[1] * vec1[1] + vec1[2] * vec1[2])*
-			std::sqrt(vec2[0] * vec2[0] + vec2[1] * vec2[1] + vec2[2] * vec2[2]);
-		float cosValue = fDotProduct / fNorm;
-		if (cosValue > 1){
-			cosValue = 1;
-		}
-		else if (cosValue < -1){
-			cosValue = -1;
-		}
-		angle = 180.0*std::acos(cosValue) / 3.14159265;
-
-		float fVertVector[3];
-		FyCross(fVertVector, vec1, vec2);
-		if (fVertVector[2] > 0){
-			angle = -angle;
-		}
-	}
-};
+extern float cameraFDir[3], cameraUDir[3];
+extern CommonObjectManageSystem objMgtSystem;
 
 class Blood{
 public:
@@ -261,6 +213,7 @@ private:
 	ActionType m_curActionType;
 	int m_curAudioIndex;
 	bool m_isOnCameraFocus;
+	int m_attackCoolDownCnt;
 
 	int m_coolDownCnt;
 

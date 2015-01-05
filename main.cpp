@@ -9,6 +9,9 @@
 #include "net/game_client.h"
 #include "net/game_updater_real.h"
 #include "Mouse.h"
+#include "basic.h"
+#include "local/MagicBall.h"
+#include "local/CommonObjectManageSystem.h"
 
 //#define GAME_PROGRAMMING_DEFAULT_IP "140.112.67.117"
 #define GAME_PROGRAMMING_DEFAULT_IP "127.0.0.1"
@@ -39,6 +42,8 @@ SCENEid sID2;                // the 2D scene
 SCENEid sID2menu;                // the 2D scene
 
 CharacterManageSystem chrMgtSystem(&game_updater);
+CommonObjectManageSystem objMgtSystem;
+float cameraFDir[3], cameraUDir[3];
 
 Mouse mouseInput;
 
@@ -67,6 +72,10 @@ int sight_h = 66;
 int mouse_w = 20;
 int mouse_h = 30;
 
+
+bool bLeftButtonDown = false;
+bool bRightButtonDown = false;
+
 int oldX, oldY, oldXM, oldYM, oldXMM, oldYMM;
 std::map<MotionState, ACTIONid> state2ActionTable;
 //BOOL4 poseChange = FALSE;
@@ -94,6 +103,8 @@ void ChangeActor(BYTE code, BOOL4 value);
 void setCamera();
 void showMenu(BYTE code, BOOL4 value);
 void updateMousePos(int, int);
+void mouseRButtonDown(int ,int);
+void mouseLButtonDown(int, int);
 
 void FyMain(int argc, char **argv) {
 	
@@ -125,6 +136,7 @@ void FyMain(int argc, char **argv) {
 	FySetTexturePath("C:\\Fly2Data\\Scenes\\Textures");
 	FySetScenePath("C:\\Fly2Data\\Scenes");
 	FySetAudioPath("C:\\Fly2Data\\Audio");
+	FySetGameFXPath("C:\\Fly2Data\\GameFXFiles\\FX_Used");
 
 	//create a viewport
 	viewportID = FyCreateViewport(0, 0, viewPortWidth, viewPortHeight);
@@ -254,10 +266,9 @@ void FyMain(int argc, char **argv) {
    FyDefineHotKey(FY_TAB, ChangeActor, FALSE);
    FyDefineHotKey(FY_ESC, showMenu, FALSE);
    //define some mouse function
-   FyBindMouseFunction(LEFT_MOUSE, InitPivot, PivotCam, NULL, NULL);
-   FyBindMouseFunction(MIDDLE_MOUSE, InitZoom, ZoomCam, NULL, NULL);
-   FyBindMouseFunction(RIGHT_MOUSE, InitMove, MoveCam, NULL, NULL);
-
+   FyBindMouseFunction(LEFT_MOUSE, InitPivot, mouseLButtonDown, NULL, NULL);
+   FyBindMouseFunction(RIGHT_MOUSE, InitPivot, mouseRButtonDown, NULL, NULL);
+   
    //bind timers, frame rate = 30 fps
    FyBindTimer(0, 30.0f, GameAI, TRUE);
    FyBindTimer(1, 30.0f, RenderIt, TRUE);
@@ -283,8 +294,11 @@ void FyMain(int argc, char **argv) {
 void GameAI(int skip)
 {
 	if (!stateMenu)	{
+		objMgtSystem.update(skip);
+		camera.getCameraDir(cameraUDir, cameraFDir);
 		chrMgtSystem.update(skip); //人物狀態的更新
 		actorID = chrMgtSystem.getActorID();
+
 		//Camera狀態的更新
 		camera.update(skip);
 		game_timer.update();
@@ -393,6 +407,13 @@ void RenderIt(int skip){
 }
 
 
+void mouseRButtonDown(int, int){
+	bRightButtonDown = true;
+}
+
+void mouseLButtonDown(int, int){
+	bLeftButtonDown = true;
+}
 
 void Movement(BYTE code, BOOL4 value){
 

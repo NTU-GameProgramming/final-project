@@ -6,11 +6,13 @@ enum MotionState{	//live status
 
 	//attack related status
 	ATTACK = 2,
-	DAMAGED = ATTACK << 1,
+	HEAVY_ATTACK = ATTACK << 1,
+	DAMAGED = HEAVY_ATTACK << 1,
 	COOL_DOWN = DAMAGED << 1,
+	BOOST =  COOL_DOWN << 1,
 
 	//moving  start from 256
-	MOVE_FORWARD = 1 << 8,
+	MOVE_FORWARD = 1 << 9,
 	MOVE_BACKWARD = MOVE_FORWARD << 1,
 	MOVE_LEFT = MOVE_BACKWARD << 1,
 	MOVE_RIGHT = MOVE_LEFT << 1,

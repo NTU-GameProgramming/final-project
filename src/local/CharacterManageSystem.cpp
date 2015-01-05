@@ -73,10 +73,27 @@ void CharacterManageSystem::updateCharacterInputs(){
 	//	std::cout<<"right key\n";
 	}
 
+	if (FyCheckHotKeyStatus(FY_SHIFT)){
+		newState = newState | MotionState::BOOST;
+		//	std::cout<<"right key\n";
+	}
+
 	if (FyCheckHotKeyStatus(FY_F)){
 		newState = newState | MotionState::ATTACK;
 		attack = true;
 		//std::cout<<"attak key\n";
+	}
+
+	if (bLeftButtonDown){
+		newState = newState | MotionState::ATTACK;
+		attack = true;
+		bLeftButtonDown = false;
+	}
+
+	if (bRightButtonDown){
+		newState = newState | MotionState::HEAVY_ATTACK;
+		attack = true;
+		bRightButtonDown = false;
 	}
 
 	if (mouseInput.mouseVelX > 0){
@@ -93,8 +110,6 @@ void CharacterManageSystem::updateCharacterInputs(){
 	if(old_state != newState) {
 		this->game_updater->updateCharacterMotionStatePush(m_localPlayerId, newState);
 	}
-
-
 
 	if(move) {
 		this->game_updater->updateCharacterPushPosition(m_localPlayerId);
