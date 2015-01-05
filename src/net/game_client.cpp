@@ -59,7 +59,11 @@ void GmClient::callback(Json::Value &json) {
 
 			} else if(json[1] == "READY") {
 				this->status = CONNECTED;
-				cout << "READY!!!!" << endl;
+				this->game_tree.setTotalGameTime(json[2]["TIME"].asInt());
+				this->game_tree.setTotalGameRounds(json[2]["ROUNDS"].asInt());
+				cout << "##### READY #####"  << endl;
+				cout << "Time(s): " << this->game_tree.getTotalGameTime() << endl;
+				cout << "Rounds : " << this->game_tree.getTotalGameRounds() << endl;
 			} else if(json[1] == "ADD_CHARACTER"){
 				cout << "Add Character!!" << endl;
 				// 得到Gm_id, 新增一個Character
@@ -127,6 +131,7 @@ void GmClient::callback(Json::Value &json) {
 				Json::Value data = json[2];
 				int winner_game_id = data["WINNER_GAME_ID"].asInt();
 				cout << "Roundover: winner is " << winner_game_id << endl;
+
 			}
 		}
 	}
@@ -144,57 +149,3 @@ void GmClient::sync() {
 	sync_cube[1] = "SYNC";
 	(this->json_socket)->sendJsonMessage(sync_cube);
 }
-
-/*
-
-void GmClient::registerScene(SCENEid id) {
-	(this->scene_info).id = id;
-};
-
-void GmClient::registerObject(OBJECTid id) {
-	(this->obj_infos)[id].id = id;
-};
-
-void GmClient::registerCharacter(CHARACTERid id, DataStrength s) {
-	FnCharacter actor;
-	Json::Value reg_cube, data;
-
-	reg_cube["TYPE"] = "GAME";
-	reg_cube["EVENT"] = "REG_CHARACTER";
-
-	data["ID"] = id;
-	reg_cube["DATA"] = data;
-
-	(this->json_socket)->sendJsonMessage(reg_cube);
-};
-
-void GmClient::objectPosition(OBJECTid id, float *pos) {
-	struct GmObjectInfo *GOI;
-	// !test if exists
-	GOI = &((this->obj_infos)[id]);
-	FnObject obj;
-	obj.ID(id);
-
-	if(pos == NULL) { // getter
-		obj.GetPosition(GOI->pos);
-	} else { // setter
-		memcpy (GOI->pos, pos, sizeof(float[3]));
-		obj.SetPosition(pos);
-	}
-};
-
-void GmClient::characterPosition(CHARACTERid id, float *pos) {
-	struct GmCharacterInfo *GCI;
-	// !test if exists
-	GCI = &((this->character_infos)[id]);
-	FnObject actor;
-	actor.ID(id);
-
-	if(pos == NULL) { // getter
-		actor.GetPosition(GCI->pos);
-	} else { // setter
-		memcpy (GCI->pos, pos, sizeof(float[3]));
-		actor.SetPosition(pos);
-	}
-};
-*/

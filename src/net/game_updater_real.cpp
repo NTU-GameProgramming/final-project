@@ -30,6 +30,9 @@ void GmUpdaterReal::update(enum EVENT evt, Json::Value &json) {
 	case UPDATE_ATTACK:
 		evt_str = "UPDATE_ATTACK";
 		break;
+	case ROUNDOVER:
+		evt_str = "ROUNDOVER";
+		break;
 	default:
 		cout << "ERROR: Unknown EVENT: " << evt << endl;
 		break;
@@ -148,7 +151,8 @@ void GmUpdaterReal::updateCharacterMotionStatePull(int game_id, int ms){
 };
 
 void GmUpdaterReal::gameOverPush(){
-
+	Json::Value data;
+	this->update(EVENT::ROUNDOVER, data);
 };
 
 void GmUpdaterReal::gameOverPull(){

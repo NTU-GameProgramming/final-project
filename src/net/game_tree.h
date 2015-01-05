@@ -50,12 +50,19 @@ public:
 		return this->total_game_time;
 	}
 
-	int setTotalGameTime(int total_game_time) {
+	void setTotalGameTime(int total_game_time) {
 		this->total_game_time = total_game_time;
 	}
 
+	int getTotalGameRounds() {
+		return this->total_game_rounds;
+	}
+
+	void setTotalGameRounds(int total_game_rounds) {
+		this->total_game_rounds = total_game_rounds;
+	}
 private:
 	map<int, GmObject*> objects;
 	map<int, GmCharacter*> characters;
-	int total_game_time;
+	int total_game_time, total_game_rounds;
 };

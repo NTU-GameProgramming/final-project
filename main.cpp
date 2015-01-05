@@ -110,7 +110,7 @@ void FyMain(int argc, char **argv) {
 	game_client.initialize(ip, port, &game_updater);
 	game_client.connectServer();
 	cout << "Server connected." << endl;
-	game_timer.initialize(&game_updater, game_client.getGmTree().getTotalGameTime());
+	game_timer.initialize(&game_updater, game_client.getGmTree().getTotalGameTime(), game_client.getGmTree().getTotalGameRounds());
 	std::cout<<"Start Game" << std::endl;
 	//create a new window
 	FyStartFlyWin32("HomeWork 3 - with Fly2", 0, 0, window_w, window_h, FALSE);
@@ -382,7 +382,7 @@ void RenderIt(int skip){
 
 	sprintf_s(posS, "%d", chrMgtSystem.getCharacterblood(actorID));
 	char_HP.Write(posS, 110, 672, 255, 255, 255);
-	sprintf_s(posS, "%d", chrMgtSystem.getCharacterblood(actorID));
+	sprintf_s(posS, "%d", game_timer.getCurrentRound());
 	info.Write(posS, 460, 694 ,255, 255, 255);
 	sprintf_s(posS, "%d", game_timer.getTimeLeft());
 	info.Write(posS, 560, 694, 255, 255, 255);

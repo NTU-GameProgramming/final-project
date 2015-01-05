@@ -8,17 +8,19 @@ class GmTimer {
 public:
 	GmTimer();
 	~GmTimer();
-	void initialize(GmUpdaterReal *game_updater, int total_game_time);
-	void resetTime();
+	void initialize(GmUpdaterReal *game_updater, int total_game_time, int total_game_rounds);
+	void resetAll();
+	void nextRound();
 	void update();
-	void reset();
 	int getTimeDiff() { return this->diff_time; }
 	int getTimeLeft() { return (this->total_game_time - this->diff_time); }
 	int getTotalTime() { return this->total_game_time; }
+	int getCurrentRound() { return this->current_round; }
 	
 private:
 	time_t initial_time;
 	int total_game_time, diff_time;
+	int total_game_rounds, current_round;
 	GmUpdaterReal *game_updater;
 	bool is_timer_stop;
 };
